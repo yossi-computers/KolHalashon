@@ -1,0 +1,15 @@
+# ---- Build output ----
+bin/
+obj/
+publish/
+*.user
+*.suo
+*.pdb
+
+# ---- קבצים גדולים מדי ל-GitHub (מגבלת 100MB לקובץ) ----
+# ffmpeg.exe (~115MB) מוטמע כ-EmbeddedResource בזמן build.
+# הורד אותו והנח כאן לפני הרצת "בנה.bat". ראה README.
+ffmpeg.exe
+
+# מתקין ויזארד חיצוני שאינו חלק מקוד המקור
+Kol Halashon Public Kiosk Setup.exe

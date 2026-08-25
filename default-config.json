@@ -1,0 +1,38 @@
+{
+  "_comment": "קובץ ההגדרות של תוכנת ההורדה מקול הלשון. נערך דרך חלון הניהול (נעול בסיסמה) או ידנית. אחרי שינוי ידני - סוגרים ופותחים מחדש את התוכנה.",
+
+  "title": "הורדת שיעורים - קול הלשון",
+
+  "_account_comment": "חשבון קול הלשון. אינו נדרש עוד להורדה - נשמר לשימוש עתידי בלבד. הסיסמה נשמרת מוצפנת (DPAPI) בקובץ ההגדרות שבתיקיית המשתמש.",
+  "username": "",
+  "password": "",
+
+  "_download_comment": "תיקיית היעד להורדות. ריק = תיקיית 'הורדות קול הלשון' תחת המסמכים. הקבצים נשמרים לפי: <תיקייה>/<שם הרב>/<כותרת>.mp3",
+  "downloadFolder": "",
+  "defaultQuality": "audio",
+
+  "_quality_comment": "כיבוי allowVideo/allowHd מסתיר את כפתורי ההורדה המתאימים בממשק (למשל בעמדה שמיועדת לנגני שמע בלבד).",
+  "allowVideo": true,
+  "allowHd": true,
+
+  "_admin_comment": "סיסמת הניהול (לפתיחת חלון ההגדרות) וסיסמת היציאה. היציאה אינה דורשת סיסמה אלא אם requireExitPassword=true. שנו את הסיסמאות!",
+  "adminPassword": "000000",
+  "exitPassword": "000000",
+  "requireExitPassword": false,
+
+  "_kiosk_comment": "kioskFullscreen=true מפעיל מסך מלא ונעילה (מתאים לעמדה ציבורית). idleSeconds=חוסר פעילות עד חזרה למסך הבית (0=כבוי). kioskDeviceOnly=true מונע הורדה למחשב - היעד חייב להיות נגן, אונקי או כרטיס זיכרון.",
+  "kioskFullscreen": true,
+  "kioskDeviceOnly": false,
+  "idleSeconds": 0,
+
+  "_login_comment": "ההורדות אינן דורשות חשבון קול הלשון (שמע ווידאו נמשכים מכתובות הנגן, ו-PDF מקישור סטטי), ולכן מסך ההתחברות מוסתר. showLogin=true מחזיר אותו - הקוד נשאר בתוכנה.",
+  "showLogin": false,
+
+  "_session_comment": "משך החיבור של משתמש בדקות. בתום הזמן מתבצע ניתוק אוטומטי ונדרשת התחברות מחדש עם שם משתמש וסיסמה. 0 = ללא הגבלה.",
+  "sessionMinutes": 30,
+
+  "_api_comment": "הגדרות ה-API של קול הלשון. baseUrl חייב להיות באותו מקור כמו האתר (www.kolhalashon.com), אחרת Cloudflare חוסם את הבקשות. siteKey הוא ערך חופשי (האתר עצמו שולח מחרוזת אקראית).",
+  "baseUrl": "https://www.kolhalashon.com/api/",
+  "siteKey": "8ea2pe8",
+  "maxParallelDownloads": 4
+}

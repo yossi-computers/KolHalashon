@@ -1,0 +1,2288 @@
+<!doctype html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>קול הלשון</title>
+<style>
+  :root{
+    --bg:#f4f6f9; --surface:#ffffff; --surface-2:#f7f9fb; --sunken:#eef1f5;
+    --border:#e4e8ee; --border-strong:#d5dbe3;
+    --text:#1b2430; --text-dim:#5b6675; --text-faint:#8a94a3;
+    --accent:#2563eb; --accent-hover:#1d4ed8; --accent-soft:#eaf1fe; --accent-ink:#ffffff;
+    --success:#15a34a; --success-soft:#e7f6ec; --danger:#dc2626; --danger-soft:#fdeceb;
+    --warn:#b45309;
+    --radius:12px; --radius-sm:9px; --radius-lg:18px;
+    --shadow-sm:0 1px 2px rgba(16,24,40,.05);
+    --shadow:0 2px 8px rgba(16,24,40,.06),0 1px 2px rgba(16,24,40,.04);
+    --shadow-lg:0 12px 34px rgba(16,24,40,.14);
+    --font:-apple-system,"Segoe UI",Rubik,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);
+    display:flex;flex-direction:column;overflow:hidden;-webkit-font-smoothing:antialiased}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,select{font-family:inherit}
+  svg{display:block;flex:0 0 auto}
+  ::-webkit-scrollbar{width:11px;height:11px}
+  ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:8px;border:3px solid var(--bg)}
+
+  /* ---------- Header ---------- */
+  header{display:flex;align-items:center;gap:16px;padding:0 22px;height:62px;
+    background:var(--surface);border-bottom:1px solid var(--border);flex:0 0 auto;z-index:20}
+  .brand{display:flex;align-items:center;gap:11px;min-width:0}
+  .brand .mark{width:34px;height:34px;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center}
+  .brand .mark img{width:100%;height:100%;object-fit:contain}
+  .brand .name{font-size:16px;font-weight:650;letter-spacing:-.01em;white-space:nowrap}
+  .brand .sub{font-size:11.5px;color:var(--text-faint);white-space:nowrap;margin-top:1px}
+  .spacer{flex:1}
+  .status{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-dim);
+    padding:6px 11px;border:1px solid var(--border);border-radius:999px;background:var(--surface-2);
+    font-family:inherit;cursor:pointer;transition:.13s}
+  .status:hover{border-color:var(--accent);color:var(--text)}
+  .target{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-dim);
+    padding:6px 11px;border:1px solid var(--border);border-radius:999px;background:var(--surface-2);
+    font-family:inherit;cursor:pointer;transition:.13s;margin-left:8px}
+  .target:hover{border-color:var(--accent);color:var(--text)}
+  .target.ext{border-color:var(--success);color:var(--text)}
+  .target span{display:flex;align-items:center}
+  /* מידע היעד: שם בשורה עליונה, ומתחתיו פס תפוסה ונפח פנוי */
+  .target .tinfo{display:flex;flex-direction:column;align-items:stretch;gap:3px}
+  .target .cap{display:flex;align-items:center;gap:6px}
+  .target .cap.hide{display:none}
+  /* רוחב קבוע לפס: בתוך flex צר הוא היה מתכווץ לאפס והפס פשוט נעלם */
+  .target .capbar{flex:0 0 52px;width:52px}
+  .capbar{flex:1;height:4px;border-radius:3px;background:var(--border);overflow:hidden;display:block}
+  .capbar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+  .capbar i.full{background:var(--danger,#d64545)}
+  .capnum{font-size:10.5px;color:var(--text-faint);white-space:nowrap}
+  /* אותו פס בתוך שורת בחירת היעד */
+  .trow .cap{display:flex;align-items:center;gap:7px;margin-top:5px}
+  .modal.wide{max-width:560px}
+  .tlist{display:flex;flex-direction:column;gap:8px;margin:14px 0;max-height:340px;overflow:auto}
+  .trow{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);
+    border-radius:12px;background:var(--surface);cursor:pointer;text-align:right;font-family:inherit;
+    color:var(--text);transition:.13s}
+  .trow:hover{border-color:var(--accent);background:var(--surface-2)}
+  .trow.sel{border-color:var(--success)}
+  .trow .ti{color:var(--text-dim);flex:none}
+  .trow .tb{flex:1;min-width:0}
+  /* display:block - שניהם היו inline, ולכן השם והנתיב נדבקו על אותה שורה
+     ו-margin-top של הנתיב לא השפיע כלל */
+  .trow .tn{display:block;font-size:14.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .trow .ts{display:block;font-size:11.5px;color:var(--text-faint);margin-top:3px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr;text-align:right}
+  .trow .tk{font-size:11px;color:var(--success);flex:none}
+  .status .dot{width:7px;height:7px;border-radius:50%;background:var(--text-faint)}
+  .status.on .dot{background:var(--success)}
+  .status.on{color:var(--text)}
+  .iconbtn{width:38px;height:38px;border-radius:10px;color:var(--text-dim);
+    display:flex;align-items:center;justify-content:center;position:relative;transition:.13s}
+  .iconbtn:hover{background:var(--sunken);color:var(--text)}
+  .iconbtn.danger:hover{background:var(--danger-soft);color:var(--danger)}
+  .iconbtn .count{position:absolute;top:-3px;left:-3px;min-width:17px;height:17px;padding:0 4px;
+    background:var(--accent);color:#fff;border-radius:999px;font-size:10.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;border:2px solid var(--surface)}
+  .sep{width:1px;height:26px;background:var(--border)}
+
+  /* ---------- Search ---------- */
+  .searchwrap{flex:0 0 auto;background:var(--surface);border-bottom:1px solid var(--border);padding:16px 22px}
+  .searchbar{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:10px;
+    background:var(--surface-2);border:1.5px solid var(--border);border-radius:12px;padding:4px 4px 4px 16px;
+    transition:.15s}
+  .searchbar:focus-within{border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px var(--accent-soft)}
+  .filterbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+  .fgroup{position:relative}
+  .fbtn{border:1px solid var(--border);background:var(--surface);color:var(--text);
+    border-radius:9px;padding:7px 12px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:550}
+  .fbtn:hover{border-color:var(--accent)}
+  .fbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .fpop{position:absolute;top:calc(100% + 6px);inset-inline-start:0;z-index:40;min-width:270px;max-height:320px;
+    overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;
+    box-shadow:0 12px 32px rgba(0,0,0,.14);padding:6px}
+  .fpop label{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;
+    font-size:14px;font-weight:450;cursor:pointer;white-space:nowrap}
+  .fpop label:hover{background:var(--accent-soft)}
+  .fpop label span{flex:1;overflow:hidden;text-overflow:ellipsis}
+  .fpop label i{color:var(--text-faint);font-style:normal;font-size:12px}
+  .fpop input{accent-color:var(--accent);flex:0 0 auto}
+  .fchips{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+  .fchip{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);
+    border:1px solid var(--accent);color:var(--accent);border-radius:999px;
+    padding:4px 10px;font-size:13px;font-weight:550}
+  .fchip button{border:none;background:none;color:inherit;cursor:pointer;font-size:15px;line-height:1;padding:0}
+  .sortbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+  .sortbar label{font-size:13px;color:var(--text-faint);font-weight:550}
+  .sortbar select{border:1px solid var(--border);background:var(--surface);color:var(--text);
+    border-radius:9px;padding:7px 10px;font-size:14px;font-family:inherit;cursor:pointer}
+  .sortbar select:hover{border-color:var(--accent)}
+  .datebar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px;
+    background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+  .datebar button{border:1px solid var(--border);background:var(--surface);color:var(--text);
+    border-radius:9px;padding:7px 12px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:550}
+  .datebar button:hover{border-color:var(--accent)}
+  .datebar .cur{flex:1;min-width:180px;text-align:center;font-weight:650;font-size:15px}
+  .datebar .lim{width:100%;text-align:center;font-size:13.5px;color:var(--text-dim)}
+  .hebpick{display:flex;gap:8px;align-items:center;width:100%;justify-content:center;flex-wrap:wrap}
+  .hebpick select{border:1px solid var(--border);background:var(--surface);color:var(--text);
+    border-radius:9px;padding:7px 10px;font-size:14px;font-family:inherit;cursor:pointer}
+  .sectionhead{display:flex;align-items:baseline;gap:8px;margin:18px 0 10px}
+  .sectionhead:first-child{margin-top:0}
+  .sectionhead h3{font-size:15px;font-weight:650;color:var(--text)}
+  .sectionhead span{font-size:12.5px;color:var(--text-faint)}
+  .glist{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+  .gitem{display:flex;align-items:center;gap:10px;text-align:right;width:100%;
+    background:var(--surface);border:1px solid var(--border);border-radius:12px;
+    padding:12px 14px;cursor:pointer;color:var(--text);font-size:14.5px;font-weight:550}
+  .gitem:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .gitem > span{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .gitem small{color:var(--text-faint);font-size:12px;font-weight:450}
+  .gitem svg{flex:0 0 auto;color:var(--accent)}
+  /* תמונת רב ברשימת הרבנים - ריבוע מעוגל במקום האייקון.
+     flex:0 0 auto הכרחי: הכלל ".gitem > span" שמעל תופס גם את ה-avatar (גם הוא span)
+     ונותן לו flex:1, ובלעדיו הוא נמתח לכל רוחב הכרטיס והתמונה יוצאת אליפסה. */
+  .gitem .avatar{flex:0 0 auto;width:40px;height:40px;border-radius:10px}
+  .modes{max-width:1000px;margin:10px auto 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .mode{border:1px solid var(--border);background:var(--surface);color:var(--text-dim);
+        border-radius:999px;padding:7px 18px;font-size:14.5px;font-weight:600;cursor:pointer}
+  .mode:hover{border-color:var(--accent)}
+  .mode.sel{background:var(--accent);border-color:var(--accent);color:#fff}
+  .searchbar .si{color:var(--text-faint)}
+  .searchbar input{flex:1;border:none;background:none;outline:none;font-size:16px;color:var(--text);padding:11px 4px}
+  .searchbar input::placeholder{color:var(--text-faint)}
+  .searchbar .go{background:var(--accent);color:#fff;font-size:15px;font-weight:600;
+    padding:11px 22px;border-radius:9px;transition:.13s}
+  .searchbar .go:hover{background:var(--accent-hover)}
+
+  /* ---------- Main ---------- */
+  main{flex:1;overflow-y:auto;padding:26px 22px 40px}
+  .container{max-width:940px;margin:0 auto}
+  .empty{text-align:center;margin-top:13vh;color:var(--text-dim)}
+  .empty .ill{width:64px;height:64px;margin:0 auto 18px;border-radius:16px;background:var(--surface);
+    border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--accent);
+    box-shadow:var(--shadow-sm)}
+  .empty h2{font-size:19px;font-weight:600;color:var(--text);margin:0 0 8px}
+  .empty p{font-size:14.5px;line-height:1.7;margin:0}
+
+  .crumb{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .backbtn{display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--text-dim);
+    padding:7px 12px 7px 14px;border:1px solid var(--border);border-radius:9px;background:var(--surface);transition:.13s}
+  .backbtn:hover{border-color:var(--border-strong);color:var(--text)}
+  .crumb .title{font-size:20px;font-weight:650;letter-spacing:-.01em}
+  /* שביל הניווט - קבוע מעל התוכן בכל הכרטיסיות */
+  #crumbs{display:flex;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  #crumbs button{padding:4px 9px;border-radius:8px;font-size:14px;font-weight:550;line-height:1.5;
+    color:var(--text-dim);background:transparent;transition:.13s}
+  #crumbs button:hover{color:var(--accent);background:var(--accent-soft)}
+  #crumbs .cur{padding:4px 9px;font-size:14px;font-weight:650;line-height:1.5;color:var(--text)}
+  /* החץ מרוכז מול שורת הטקסט. ה-1px הוא תיקון אופטי: אותיות עבריות יושבות נמוך
+     בתוך תיבת השורה (אין להן זנבות), ולכן חץ שממורכז מתמטית נראה גבוה מדי.
+     הריווח כאן סימטרי באמת רק משום שהאייקון חתוך למידת הצורה (ראו CRUMB_SEP):
+     אייקון ICONS.chev הרגיל מצייר את החץ בחצי השמאלי של ריבוע 24x24, כך שנוסף
+     לו כשמינית ריבוע של אוויר מת מצד ימין - וזה מה שיצר פער כפול מצד אחד. */
+  /* שם המחלקה ייחודי בכוונה: קיימת כבר .sep בכותרת העליונה, והיא קו מפריד אפור
+     ברוחב 1px - שימוש חוזר בשם הזה נתן לכל חץ מלבן רקע אפור ורוחב שגוי. */
+  #crumbs .crumbsep{display:flex;align-items:center;color:var(--text-faint);position:relative;top:1px;padding:0 7px}
+  .crumb .title small{display:block;font-size:12.5px;color:var(--text-faint);font-weight:400;margin-top:2px}
+
+  .sectionlabel{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--text-faint);margin:4px 2px 12px}
+
+  /* Rav grid */
+  .ravgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-bottom:28px}
+  .ravcard{display:flex;align-items:center;gap:13px;text-align:right;background:var(--surface);
+    border:1px solid var(--border);border-radius:var(--radius);padding:15px;transition:.14s;box-shadow:var(--shadow-sm)}
+  .ravcard:hover{border-color:var(--accent);box-shadow:var(--shadow);transform:translateY(-1px)}
+  .avatar{width:44px;height:44px;border-radius:11px;background:var(--accent-soft);color:var(--accent);
+    display:flex;align-items:center;justify-content:center;flex:0 0 auto;position:relative;overflow:hidden}
+  /* התמונה מונחת מעל אייקון ברירת המחדל. אם היא לא נטענת היא מוסרת (onerror) והאייקון נחשף. */
+  .avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .ravcard .nm{font-size:15.5px;font-weight:600;line-height:1.3}
+  .ravcard .en{font-size:12px;color:var(--text-faint);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ravcard .go{margin-inline-start:auto;color:var(--text-faint)}
+  .ravcard:hover .go{color:var(--accent)}
+
+  /* Shiur rows */
+  .shiur{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:15px 17px;margin-bottom:9px;transition:.13s;box-shadow:var(--shadow-sm)}
+  .shiur:hover{border-color:var(--border-strong)}
+  .shiur.clickable{cursor:pointer}
+  .shiur.clickable:hover{border-color:var(--accent);background:var(--surface-2)}
+  .shiur .go{color:var(--text-faint);flex:none;display:flex;align-items:center}
+  .shiur .body{flex:1;min-width:0}
+  /* שם מלא בכמה שורות ולא חתוך בשלוש נקודות - בכותרות ארוכות (ובעיקר בעלונים)
+     החלק שנחתך היה דווקא המזהה בסוף. anywhere שובר גם מילה אחת ארוכה מהשורה. */
+  .shiur .t{font-size:15.5px;font-weight:600;margin-bottom:7px;overflow-wrap:anywhere}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text-dim);
+    background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:3px 9px}
+  .chip svg{color:var(--text-faint)}
+  .chip.rav{background:var(--accent-soft);border-color:transparent;color:var(--accent);font-weight:600}
+  .chip.rav img{width:17px;height:17px;border-radius:5px;object-fit:cover;margin-inline-start:-2px}
+  .chip.rav.ravlink{cursor:pointer;transition:.13s}
+  .chip.rav.ravlink:hover{background:var(--accent);color:#fff}
+  .chip.rav.ravlink:hover svg{color:#fff}
+  .actions{display:flex;gap:8px;flex:0 0 auto}
+  .dl{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;padding:9px 15px;
+    border-radius:9px;transition:.13s;white-space:nowrap;border:1.5px solid transparent}
+  .dl.audio{background:var(--accent);color:#fff}
+  .dl.audio:hover{background:var(--accent-hover)}
+  .dl.ghost{background:var(--surface);border-color:var(--border-strong);color:var(--text-dim)}
+  .dl.ghost:hover{border-color:var(--accent);color:var(--accent)}
+  .dl:disabled{opacity:.4;cursor:not-allowed}
+  .loadmore{display:flex;align-items:center;gap:8px;margin:14px auto 26px;background:var(--surface);
+    border:1px solid var(--border-strong);color:var(--text-dim);padding:11px 26px;border-radius:10px;
+    font-size:14px;transition:.13s}
+  .loadmore:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* ---------- Downloads drawer ---------- */
+  .scrim{position:fixed;inset:0;background:rgba(16,24,40,.32);z-index:30;opacity:0;pointer-events:none;transition:.2s}
+  .scrim.show{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;left:0;height:100%;width:432px;max-width:93vw;background:var(--surface);
+    border-left:1px solid var(--border);transform:translateX(-100%);transition:transform .24s cubic-bezier(.4,0,.2,1);
+    z-index:40;display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
+  .drawer.open{transform:translateX(0)}
+  .drawer .dh{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--border)}
+  .drawer .dh h2{flex:1;font-size:17px;font-weight:650;margin:0}
+  .txtbtn{font-size:13px;color:var(--text-dim);padding:6px 10px;border-radius:8px;transition:.13s}
+  .txtbtn:hover{background:var(--sunken);color:var(--text)}
+  .dlist{flex:1;overflow-y:auto;padding:14px}
+  .dcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 14px;margin-bottom:10px}
+  .dcard .dt{font-size:14px;font-weight:600;margin-bottom:2px;overflow-wrap:anywhere}
+  .dcard .dsub{font-size:12px;color:var(--text-faint);margin-bottom:10px}
+  .dfoot .dacts{display:flex;align-items:center;gap:6px}
+  .dfoot .ib{display:flex;align-items:center;justify-content:center;width:30px;height:28px;padding:0;
+    color:var(--text-dim)}
+  .dfoot .ib svg{width:16px;height:16px}
+  .dfoot .ib:hover{border-color:var(--accent);color:var(--accent)}
+  .dfoot .ib.danger:hover{border-color:var(--danger);color:var(--danger)}
+  .track{height:7px;background:var(--sunken);border-radius:999px;overflow:hidden}
+  .track > i{display:block;height:100%;width:0;background:var(--accent);border-radius:999px;transition:width .25s}
+  /* התקדמות לא ידועה (המרה, העתקה להתקן): פס נע - ולא פס מלא שנראה כמו סיום */
+  .track > i.indet{width:38%;transition:none;animation:indet 1.1s ease-in-out infinite}
+  @keyframes indet{0%{transform:translateX(110%)}100%{transform:translateX(-280%)}}
+  .dcard.done .track > i{background:var(--success)}
+  .dcard.error .track > i{background:var(--danger)}
+  .dfoot{display:flex;align-items:center;justify-content:space-between;margin-top:9px;font-size:12px;color:var(--text-dim)}
+  .dfoot .st{display:flex;align-items:center;gap:6px}
+  .dfoot .st.ok{color:var(--success)} .dfoot .st.err{color:var(--danger)}
+  .dfoot button{font-size:12px;color:var(--text-dim);padding:4px 11px;border:1px solid var(--border);border-radius:7px;transition:.13s}
+  .dfoot button:hover{border-color:var(--border-strong);color:var(--text)}
+  /* שורת סיכום מעל רשימת ההורדות: כמה נשאר וכמה זמן */
+  .dsummary{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface-2);
+    font-size:12.5px;color:var(--text-dim)}
+  .dsummary b{font-weight:650;color:var(--text)}
+  .dempty{text-align:center;color:var(--text-faint);margin-top:56px;font-size:14px}
+  .dempty svg{margin:0 auto 12px;color:var(--border-strong)}
+
+  /* ---------- Overlays ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(16,24,40,.4);display:none;align-items:center;justify-content:center;
+    z-index:60;backdrop-filter:blur(2px)}
+  .overlay.show{display:flex}
+  .modal{background:var(--surface);border-radius:var(--radius-lg);padding:28px;width:440px;max-width:92vw;box-shadow:var(--shadow-lg)}
+  .modal .mi{width:46px;height:46px;border-radius:12px;background:var(--accent-soft);color:var(--accent);
+    display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+  .modal h2{margin:0 0 8px;font-size:20px;font-weight:650}
+  .modal p{color:var(--text-dim);margin:0 0 22px;font-size:14px;line-height:1.7}
+  .modal label{display:block;font-size:13px;font-weight:500;color:var(--text-dim);margin:14px 0 6px}
+  .modal input{width:100%;background:var(--surface-2);border:1.5px solid var(--border);color:var(--text);
+    border-radius:10px;padding:12px 14px;font-size:15px;transition:.13s}
+  .modal input:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px var(--accent-soft)}
+  .modal .row{display:flex;gap:10px;margin-top:24px}
+  .modal .row button{flex:1;padding:13px;font-size:15px;font-weight:600;border-radius:10px;transition:.13s}
+  .modal .primary{background:var(--accent);color:#fff}
+  .modal .primary:hover{background:var(--accent-hover)}
+  .modal .ghost{background:var(--surface-2);border:1px solid var(--border);color:var(--text-dim)}
+  .modal .ghost:hover{border-color:var(--border-strong);color:var(--text)}
+
+  /* ---------- Toast / busy ---------- */
+  #toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(16px);opacity:0;
+    background:#1b2430;color:#f4f6f9;padding:12px 20px;border-radius:11px;z-index:80;transition:.22s;
+    font-size:14px;box-shadow:var(--shadow-lg);max-width:80vw;text-align:center}
+  #toast.show{transform:translateX(-50%);opacity:1}
+  /* הצצה מוגדלת לתמונת רב. position:fixed ולא בתוך הכרטיס, כי הרשימות גוללות
+     ו-overflow שלהן היה חותך חלונית שממוקמת בתוכן. */
+  #imgPeek{position:fixed;z-index:90;display:none;padding:6px;border-radius:14px;
+    background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-lg);
+    pointer-events:none;opacity:0;transition:opacity .12s}
+  #imgPeek.show{display:block;opacity:1}
+  /* 200px הוא הרזולוציה המקורית של התמונות אצל קול הלשון (0674.jpg הוא 200x200),
+     ולכן אין טעם להגדיל מעבר לזה - זה רק היה מטשטש. */
+  #imgPeek img{display:block;width:200px;height:200px;object-fit:cover;border-radius:9px}
+  /* תמונת עמוד ראשון של ספר/עלון. 264x358 הוא הגודל שקול הלשון מייצרים, ולכן זו
+     גם המידה כאן. contain ורקע לבן, כי דף שאינו בדיוק ביחס הזה לא ייחתך. */
+  #imgPeek.pdf img{width:264px;height:358px;object-fit:contain;background:#fff}
+  /* שם הספר: רמז שיש מה לראות מאחוריו */
+  .btitle{cursor:zoom-in}
+  /* ---------- נגן הווידאו ----------
+     חלון על פני המסך, כי וידאו צריך שטח - בשונה מנגן השמע שיושב בשורה תחתונה. */
+  #vidOverlay .vbox{background:#000;border-radius:var(--radius);overflow:hidden;
+    width:min(92vw,1000px);box-shadow:var(--shadow-lg);display:flex;flex-direction:column}
+  #vidOverlay .vhead{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#111;color:#f2f4f7}
+  #vidOverlay .vt{flex:1;min-width:0;font-size:14.5px;font-weight:600;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #vidOverlay .vclose{flex:none;color:#aab3bf;padding:6px;border-radius:8px;transition:.13s}
+  #vidOverlay .vclose:hover{background:#22282f;color:#fff}
+  #vidOverlay video{display:block;width:100%;max-height:72vh;background:#000}
+  #vidOverlay .vmsg{padding:11px 14px;background:#111;color:#aab3bf;font-size:13px;text-align:center}
+  #vidOverlay .vmsg.hide{display:none}
+  /* משולש הווידאו בשורת שיעור - אותו כפתור עגול כמו משולש השמע */
+  .actions .pl.vid{color:var(--text-dim)}
+  .actions .pl.vid:hover{color:var(--accent)}
+
+  /* ---------- נגן ההאזנה ----------
+     שורה בתחתית החלון ולא חלונית צפה, כדי שלא תסתיר תוצאות; היא נשארת פתוחה גם
+     כשעוברים מסך, ולכן אפשר להמשיך לחפש תוך כדי האזנה. */
+  #player{display:none;flex:0 0 auto;align-items:center;gap:12px;padding:9px 18px;
+    background:var(--surface);border-top:1px solid var(--border);box-shadow:var(--shadow-lg)}
+  #player.on{display:flex}
+  #player .ptrans{display:flex;align-items:center;gap:6px;flex:none;direction:ltr}
+  #player .pbtn{display:flex;align-items:center;justify-content:center;width:42px;height:42px;
+    flex:none;border-radius:50%;background:var(--accent);color:#fff;transition:.13s}
+  #player .pbtn:hover{background:var(--accent-hover)}
+  #player .skip{display:flex;align-items:center;justify-content:center;width:34px;height:34px;
+    flex:none;border-radius:9px;color:var(--text-dim);transition:.13s}
+  #player .skip:hover{background:var(--surface-2);color:var(--text)}
+  #player .pinfo{flex:0 1 auto;min-width:0;max-width:270px}
+  #player .pt{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #player .ps{font-size:12px;color:var(--text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* ציר הזמן נשאר משמאל לימין גם בממשק עברי - כך מוצג זמן בכל נגן */
+  #player .seekwrap{flex:1;display:flex;align-items:center;gap:9px;direction:ltr}
+  #player .tnum{font-size:12px;color:var(--text-faint);font-variant-numeric:tabular-nums;flex:none;min-width:42px;text-align:center}
+  #player input[type=range]{flex:1;-webkit-appearance:none;height:5px;border-radius:4px;
+    background:var(--border-strong);outline:none;cursor:pointer}
+  #player input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+    border-radius:50%;background:var(--accent);border:2px solid var(--surface);box-shadow:var(--shadow-sm)}
+  #player .pclose{flex:none;color:var(--text-faint);padding:7px;border-radius:9px;transition:.13s}
+  #player .pclose:hover{background:var(--surface-2);color:var(--danger)}
+  /* משולש ההשמעה שבשורת שיעור */
+  .actions .pl{display:flex;align-items:center;justify-content:center;width:38px;height:38px;
+    border-radius:50%;border:1px solid var(--border);color:var(--accent);
+    background:var(--surface-2);transition:.13s}
+  .actions .pl:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .actions .pl.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  /* תג קוד ההאזנה בטלפון + החלונית שנפתחת במעבר עליו */
+  .phcode{display:inline-flex;align-items:center;gap:5px;padding:8px 11px;border-radius:9px;
+    background:var(--surface-2);border:1px solid var(--border);color:var(--text-dim);
+    font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;transition:.13s;cursor:default}
+  .phcode:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+  .phcode svg{width:15px;height:15px}
+  #phonePop{position:fixed;z-index:95;display:none;width:290px;padding:16px;border-radius:14px;
+    background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-lg)}
+  #phonePop.show{display:block}
+  #phonePop h4{font-size:14.5px;font-weight:650;margin-bottom:12px}
+  #phonePop .lbl{font-size:12.5px;color:var(--text-faint);margin-bottom:5px}
+  #phonePop select{width:100%;padding:8px 10px;border-radius:9px;border:1px solid var(--border);
+    background:var(--surface-2);color:var(--text);font-size:13px;font-family:inherit;margin-bottom:12px}
+  /* רצף החיוג נקרא משמאל לימין (* קודם), ולכן התיבות מוצגות בכיוון LTR
+     בתוך ממשק שכולו RTL - אחרת הדפדפן הופך את סדרן. */
+  #phonePop .keys{display:flex;gap:6px;align-items:center;direction:ltr}
+  #phonePop .keys span{display:flex;align-items:center;justify-content:center;height:38px;min-width:38px;
+    padding:0 10px;border-radius:9px;background:var(--surface-2);border:1px solid var(--border);
+    font-size:15px;font-weight:650;font-variant-numeric:tabular-nums}
+  #phonePop .keys span.num{flex:1;color:var(--accent);background:var(--accent-soft);border-color:transparent}
+  #phonePop .dir{margin-top:6px;direction:ltr;text-align:left;font-size:17px;
+    line-height:1;color:var(--text-faint)}
+  #busy{position:fixed;inset:0;background:rgba(244,246,249,.66);display:none;align-items:center;justify-content:center;
+    z-index:70;flex-direction:column;gap:15px;backdrop-filter:blur(1px)}
+  #busy.show{display:flex}
+  .spin{width:42px;height:42px;border:3.5px solid var(--border);border-top-color:var(--accent);
+    border-radius:50%;animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  #busy .msg{color:var(--text-dim);font-size:14.5px;font-weight:500}
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="mark" id="brandMark"></div>
+      <div>
+        <div class="name" id="title">קול הלשון</div>
+        <div class="sub">הורדת שיעורים לנגן</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <button class="target" id="targetPill" title="יעד ההורדות"><span id="targetIcon"></span>
+      <span class="tinfo"><span id="targetTxt">המחשב</span>
+        <span class="cap" id="targetCap"><span class="capbar"><i></i></span><span class="capnum"></span></span></span></button>
+    <button class="status" id="loginPill" title="התחברות / התנתקות"><span class="dot"></span><span id="loginTxt">לא מחובר</span></button>
+    <button class="iconbtn" id="btnLogout" title="התנתק" style="display:none"></button>
+    <div class="sep"></div>
+    <button class="iconbtn" id="btnDownloads" title="הורדות"><span id="dlIcon"></span><span class="count" id="dlBadge" style="display:none">0</span></button>
+    <button class="iconbtn" id="btnFolder" title="פתח תיקייה"></button>
+    <button class="iconbtn" id="btnAdmin" title="ניהול"></button>
+    <button class="iconbtn danger" id="btnExit" title="יציאה"></button>
+  </header>
+
+  <div class="searchwrap">
+    <div class="searchbar">
+      <span class="si" id="searchIcon"></span>
+      <input id="q" placeholder="חיפוש רב, נושא או שיעור" autocomplete="off">
+      <button class="go" id="btnSearch">חיפוש</button>
+    </div>
+    <div class="modes" id="modes">
+      <button class="mode sel" data-m="shiurim">שיעורים</button>
+      <button class="mode" data-m="ravs">רבנים</button>
+      <button class="mode" data-m="topics">נושאים</button>
+      <button class="mode" data-m="series">סדרות שיעורים</button>
+      <button class="mode" data-m="channels">ערוצי תורה</button>
+      <button class="mode" data-m="hamchasha">שיעורים בהמחשה</button>
+      <button class="mode" data-m="books">ספרים ועלונים</button>
+    </div>
+  </div>
+
+  <main>
+    <div class="container">
+      <div class="empty" id="hint">
+        <div class="ill" id="hintIll"></div>
+        <h2>התחילו בחיפוש</h2>
+        <p>חפשו שם של רב, נושא או שיעור.<br>בחרו רב מהתוצאות כדי לעיין בשיעורים ולהוריד לנגן.</p>
+      </div>
+      <nav id="crumbs" aria-label="מסלול ניווט"></nav>
+      <div id="content"></div>
+    </div>
+  </main>
+
+  <div id="player">
+    <!-- כפתורי ההפעלה וציר הזמן נשארים משמאל-לימין, כמו בכל נגן, כדי ש"קדימה"
+         יהיה לכיוון שאליו הפס מתקדם -->
+    <div class="ptrans">
+      <button class="skip" id="plBack" title="15 שניות אחורה"></button>
+      <button class="pbtn" id="plToggle" title="נגן / השהה"></button>
+      <button class="skip" id="plFwd" title="15 שניות קדימה"></button>
+    </div>
+    <div class="pinfo"><div class="pt" id="plTitle"></div><div class="ps" id="plSub"></div></div>
+    <div class="seekwrap">
+      <span class="tnum" id="plCur">0:00</span>
+      <input type="range" id="plSeek" min="0" max="1000" value="0" step="1">
+      <span class="tnum" id="plDur">0:00</span>
+    </div>
+    <button class="pclose" id="plClose" title="סגור את הנגן"></button>
+    <audio id="plAudio" preload="none"></audio>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+  <aside class="drawer" id="drawer">
+    <div class="dh">
+      <h2>הורדות</h2>
+      <button class="txtbtn" id="btnClearDone">נקה שהושלמו</button>
+      <button class="iconbtn" id="btnCloseDrawer" title="סגור"></button>
+    </div>
+    <div class="dsummary" id="dlSummary" style="display:none"></div>
+    <div class="dlist" id="dlList"></div>
+  </aside>
+
+  <div class="overlay" id="loginOverlay">
+    <div class="modal">
+      <div class="mi" id="loginMi"></div>
+      <h2>התחברות לקול הלשון</h2>
+      <p>כדי להוריד שיעורים יש להתחבר עם חשבון קול הלשון.</p>
+      <label>קוד משתמש (6 ספרות)</label>
+      <input id="liUser" autocomplete="off" inputmode="numeric" placeholder="לדוגמה 123456">
+      <label>סיסמה</label>
+      <input id="liPass" type="password" autocomplete="off">
+      <div class="row">
+        <button class="ghost" id="liCancel">ביטול</button>
+        <button class="primary" id="liOk">התחבר</button>
+      </div>
+      <button class="txtbtn" id="liSite" style="margin-top:10px">התחברות דרך אתר קול הלשון</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="targetOverlay">
+    <div class="modal wide">
+      <div class="mi" id="targetMi"></div>
+      <h2>לאן להוריד?</h2>
+      <p>בחרו את היעד. בהתקן חיצוני הקבצים נשמרים בתיקיית "קול הלשון".</p>
+      <div id="targetList" class="tlist"></div>
+      <div class="row">
+        <button class="ghost" id="tgCancel">סגור</button>
+        <button class="ghost" id="tgFolder">בחר תיקייה במחשב...</button>
+        <button class="primary" id="tgRefresh">רענן רשימה</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="exitOverlay">
+    <div class="modal">
+      <div class="mi" id="exitMi"></div>
+      <h2>יציאה מהתוכנה</h2>
+      <p id="exText">לסגור את התוכנה?</p>
+      <div id="exPassWrap" style="display:none">
+        <label>סיסמה</label>
+        <input id="exPass" type="password">
+      </div>
+      <div class="row">
+        <button class="ghost" id="exCancel">ביטול</button>
+        <button class="primary" id="exOk">יציאה</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="vidOverlay">
+    <div class="vbox">
+      <div class="vhead">
+        <div class="vt" id="vidTitle"></div>
+        <button class="vclose" id="vidClose" title="סגור"></button>
+      </div>
+      <video id="vidEl" controls playsinline></video>
+      <div class="vmsg" id="vidMsg">טוען את הווידאו...</div>
+    </div>
+  </div>
+
+  <div id="busy"><div class="spin"></div><div class="msg" id="busyMsg">רגע...</div></div>
+  <div id="toast"></div>
+  <div id="imgPeek"><img alt=""></div>
+  <div id="phonePop"></div>
+
+<!-- hls.js 1.5.17 (Apache License 2.0, (c) 2017 Dailymotion) - נזרק לכאן מהמשאב
+     המוטמע בזמן טעינת הדף. ראו hls-LICENSE.txt ו-BuildKioskHtml. -->
+<script>/*__HLS_JS__*/</script>
+
+<script>
+const host = window.chrome && window.chrome.webview;
+function send(o){ try{ host.postMessage(o); }catch(e){} }
+const $ = s => document.querySelector(s);
+
+/* ---------- SVG icon set (stroke, currentColor) ---------- */
+const S = (p,o)=>`<svg width="${(o&&o.s)||20}" height="${(o&&o.s)||20}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${(o&&o.w)||1.75}" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const ICONS = {
+  logo:  S('<path d="M4 12a8 8 0 0 1 16 0"/><path d="M4 12v3a2 2 0 0 0 2 2h1v-5H6a2 2 0 0 0-2 2Z" fill="currentColor" stroke="none"/><path d="M20 12v3a2 2 0 0 1-2 2h-1v-5h1a2 2 0 0 1 2 2Z" fill="currentColor" stroke="none"/>',{s:20,w:1.6}),
+  search:S('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/>'),
+  download:S('<path d="M12 4v11"/><path d="m7.5 11 4.5 4.5 4.5-4.5"/><path d="M5 19h14"/>'),
+  folder:S('<path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4l2 2.2h7A1.5 1.5 0 0 1 19 9.7V17a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 3 17V7.5Z"/>'),
+  settings:S('<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l1.9-1.5-2-3.4-2.3.9a7 7 0 0 0-2-1.2L15.9 2h-3.8l-.5 2.4a7 7 0 0 0-2 1.2l-2.3-.9-2 3.4 1.9 1.5A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.2l-1.9 1.5 2 3.4 2.3-.9a7 7 0 0 0 2 1.2l.5 2.4h3.8l.5-2.4a7 7 0 0 0 2-1.2l2.3.9 2-3.4-1.9-1.5A7 7 0 0 0 19 12Z"/>'),
+  power:S('<path d="M12 4v8"/><path d="M7.5 7a7 7 0 1 0 9 0"/>'),
+  back:S('<path d="m14 6 6 6-6 6"/><path d="M20 12H4"/>'),
+  close:S('<path d="m6 6 12 12M18 6 6 18"/>'),
+  user:S('<circle cx="12" cy="8.5" r="3.5"/><path d="M5.5 19a6.5 6.5 0 0 1 13 0"/>'),
+  chev:S('<path d="m14 7-5 5 5 5"/>',{w:2}),
+  chevR:S('<path d="m10 7 5 5-5 5"/>',{w:2}),
+  clock:S('<circle cx="12" cy="12" r="8"/><path d="M12 8v4.5l3 1.8"/>',{s:14,w:1.7}),
+  cal:S('<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/>',{s:14,w:1.7}),
+  queue:S('<path d="M4 7h16M4 12h16M4 17h9"/><path d="m17 15 2.5 2.5L22 15" stroke-width="1.6"/>'),
+  inbox:S('<path d="M4 13v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5"/><path d="M4 13 6.5 6h11L20 13"/><path d="M4 13h4l1.5 2.5h5L16 13h4"/>',{s:34,w:1.4}),
+  lock:S('<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>'),
+  key:S('<circle cx="8" cy="14" r="3.5"/><path d="m10.5 11.5 8-8M16 6l2 2M14 8l2 2"/>'),
+  check:S('<path d="m5 12.5 4 4 10-10"/>',{s:14,w:2}),
+  logout:S('<path d="M15 5.5h3.5A1.5 1.5 0 0 1 20 7v10a1.5 1.5 0 0 1-1.5 1.5H15"/><path d="M11 15.5 14.5 12 11 8.5"/><path d="M14 12H4"/>'),
+  usb:S('<rect x="7" y="9" width="10" height="12" rx="1.6"/><path d="M9.5 9V4.5A1.5 1.5 0 0 1 11 3h2a1.5 1.5 0 0 1 1.5 1.5V9"/><path d="M10 13h4"/>'),
+  tag:S('<path d="M4 11V5.5A1.5 1.5 0 0 1 5.5 4H11l8.5 8.5a1.5 1.5 0 0 1 0 2.1l-5.9 5.9a1.5 1.5 0 0 1-2.1 0L4 11Z"/><circle cx="8" cy="8" r="1.3"/>'),
+  radio:S('<circle cx="12" cy="13" r="3"/><path d="M8 8.5a5 5 0 0 0 0 9M16 8.5a5 5 0 0 1 0 9"/><path d="M5 5.5a9 9 0 0 0 0 15M19 5.5a9 9 0 0 1 0 15"/>'),
+  book:S('<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H18v15H6.5A1.5 1.5 0 0 0 5 19.5Z"/><path d="M5 19.5A1.5 1.5 0 0 1 6.5 18H18v3H6.5A1.5 1.5 0 0 1 5 19.5Z"/><path d="M9 7.5h5"/>'),
+  pc:S('<rect x="3" y="5" width="18" height="11" rx="1.6"/><path d="M8 20h8M12 16v4"/>'),
+  phone:S('<rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M10.5 5.5h3M11 18.5h2"/>'),
+  play: S('<path d="M8 5.5v13l11-6.5-11-6.5Z" fill="currentColor" stroke="currentColor" stroke-linejoin="round"/>'),
+  pause:S('<path d="M9 5v14M15 5v14" stroke-width="2.4"/>'),
+  trash:S('<path d="M4 7h16"/><path d="M9.5 7V5h5v2"/><path d="M6.5 7l.8 12.1a1.5 1.5 0 0 0 1.5 1.4h6.4a1.5 1.5 0 0 0 1.5-1.4L17.5 7"/>'),
+  vplay:S('<rect x="2.5" y="5" width="14" height="14" rx="2.5"/><path d="M7.5 9.2v5.6l4.6-2.8-4.6-2.8Z" fill="currentColor" stroke="none"/><path d="m17.5 10 4-2.4v8.8l-4-2.4v-4Z"/>'),
+  rew:  S('<path d="m11 6-6 6 6 6"/><path d="m19 6-6 6 6 6"/>'),
+  ffwd: S('<path d="m13 6 6 6-6 6"/><path d="m5 6 6 6-6 6"/>'),
+};
+// הלוגו הרשמי של קול הלשון, מוטמע כ-data URI (הדף נטען מהזיכרון ואין לו גישה לקבצים).
+document.getElementById('brandMark').innerHTML =
+  '<img src="data:image/png;base64,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" alt="קול הלשון">';
+$("#searchIcon").innerHTML = ICONS.search;
+$("#hintIll").innerHTML = S('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/>',{s:28,w:1.6});
+$("#dlIcon").innerHTML = ICONS.queue;
+$("#btnFolder").innerHTML = ICONS.folder;
+$("#btnAdmin").innerHTML = ICONS.settings;
+$("#btnExit").innerHTML = ICONS.power;
+$("#btnCloseDrawer").innerHTML = ICONS.close;
+$("#btnLogout").innerHTML = ICONS.logout;
+$("#targetIcon").innerHTML = ICONS.pc;
+$("#targetMi").innerHTML = ICONS.usb;
+$("#loginMi").innerHTML = ICONS.lock;
+$("#exitMi").innerHTML = ICONS.power;
+$("#plToggle").innerHTML = ICONS.play;
+$("#plBack").innerHTML = ICONS.rew;
+$("#plFwd").innerHTML = ICONS.ffwd;
+$("#plClose").innerHTML = ICONS.close;
+$("#vidClose").innerHTML = ICONS.close;
+
+let defaultQuality = "audio";
+let allowVideo = true, allowHd = true;   // ניתן לכבות בחלון הניהול (עמדה לנגני שמע בלבד)
+let loggedIn = false;
+const dls = new Map();
+let pendingDownload = null;
+
+/* ---------- מיונים, סינון שפה ותאריך עברי ----------
+   כל התוויות והמזהים הועתקו מקובץ התרגום הרשמי של האתר
+   (assets/i18n/regularSite/he.json, מפתחות Search.*), ומרשימת השפות שבקוד שלו. */
+const LANGS = {1:"עברית",2:"אנגלית",3:"אידיש",4:"צרפתית",5:"ספרדית",6:"רוסית",7:"בוכרית",
+  8:"הונגרית",9:"פורטוגזית",10:"פרסית",11:"הולנדית",12:"פולנית",13:"גרמנית",14:"גאורגיאנית",
+  15:"גרמנית שוויצרית",16:"פלמית",17:"איטלקית",18:"מרוקאית"};
+
+const SORTS = {
+  ravs:      {order:[1,2,3],
+              lbl:{1:"הכי רלוונטי",2:"שם הרב (א-ת)",3:"שם הרב (ת-א)"}},
+  shiurim:   {order:[7,1,2,3,4,5,6,8],
+              lbl:{1:"הכי רלוונטי",2:"שם הרב (א-ת)",3:"שם הרב (ת-א)",4:"כותרת השיעור (א-ת)",
+                   5:"כותרת השיעור (ת-א)",6:"אורך השיעור",7:"הכי חדש",8:"מהישן לחדש"}},
+  series:    {order:[1,5,2,3,4,6],
+              lbl:{1:"הכי רלוונטי",2:"שם הרב (א-ת)",3:"שם הרב (ת-א)",4:"כמות השיעורים בסדרה",
+                   5:"הכי חדש",6:"מהישן לחדש"}},
+  books:     {order:[7,8,1,2,3,4,5],
+              lbl:{1:"הכי רלוונטי",2:"שם המחבר (א-ת)",3:"שם המחבר (ת-א)",4:"שם הספר (א-ת)",
+                   5:"שם הספר (ת-א)",7:"הכי חדש",8:"מהישן לחדש"}},
+  topics:    {order:[1,2,3],
+              lbl:{1:"הכי רלוונטי",2:"שם הנושא (א-ת)",3:"שם הנושא (ת-א)"}},
+};
+
+// מצב המיון/סינון הנוכחי לכל מסך
+const sortState = {ravs:{o:1,l:-1}, shiurim:{o:7,l:-1}, series:{o:1,l:-1},
+                   books:{o:7,l:-1}, topics:{o:1,l:-1}, channels:{o:1,l:-1}, hamchasha:{o:7,l:-1}};
+let ravLangs = [];   // מזהי השפות שיש להן תוצאות בחיפוש הרבנים הנוכחי
+
+/* התאריך העברי מגיע מוכן מהשרת בשדה HebDate.
+   הוא לא מחושב כאן: ה-ICU של WebView2 נופל בלוח העברי לתבנית מספרית ("5786 12 11")
+   במקום לאותיות, בעוד HebrewCalendar של .NET נותן את הצורה הנכונה. */
+function hebDate(o){ return (o && o.HebDate) ? o.HebDate : ""; }
+
+/* סרגל המיון/סינון שמעל רשימה. onChange מקבל (order, lang). */
+function sortBar(key, langOptions){
+  const cfg = SORTS[key], st = sortState[key];
+  if(!cfg && !langOptions) return "";
+  let h = `<div class="sortbar">`;
+  if(cfg){
+    h += `<label>מיון לפי</label><select data-sort="${key}">` +
+      cfg.order.map(id=>`<option value="${id}"${st.o===id?" selected":""}>${esc(cfg.lbl[id]||id)}</option>`).join("") +
+      `</select>`;
+  }
+  if(langOptions && langOptions.length){
+    h += `<label>שפת השיעורים</label><select data-lang="${key}">` +
+      `<option value="-1"${st.l===-1?" selected":""}>כל השפות</option>` +
+      langOptions.map(id=>`<option value="${id}"${st.l===id?" selected":""}>${esc(LANGS[id]||("שפה "+id))}</option>`).join("") +
+      `</select>`;
+  }
+  return h + `</div>`;
+}
+function bindSortBar(box, onChange){
+  const sel = box.querySelector("[data-sort]"), lsel = box.querySelector("[data-lang]");
+  const key = (sel||lsel) && (sel?sel.dataset.sort:lsel.dataset.lang);
+  if(!key) return;
+  const fire = ()=>{
+    if(sel)  sortState[key].o = parseInt(sel.value,10);
+    if(lsel) sortState[key].l = parseInt(lsel.value,10);
+    onChange(sortState[key].o, sortState[key].l);
+  };
+  if(sel)  sel.onchange = fire;
+  if(lsel) lsel.onchange = fire;
+}
+
+/* ---------- מצבי המסך ----------
+   shiurim   - חיפוש חופשי באתר (המסך המקורי)
+   ravs      - כל הרבנים, סינון לפי שם בצד הלקוח (הרשימה מגיעה שלמה ונשמרת במטמון)
+   topics    - נושאי האתר; לחיצה על נושא מריצה חיפוש תוצאות לפי שמו
+   series    - כל סדרות השיעורים, בדפים; לחיצה פותחת את הסדרה לפי CatId
+   channels  - ערוצי התורה; נפתחים באותו מסלול של סדרה (QueryType=9)
+   hamchasha - רשימת השיעורים בהמחשה (חיפוש תוצאות על הטקסט "המחשה")
+   books     - ספרים ועלונים להורדת PDF                                            */
+const MODES = {
+  shiurim:   {ph:"חיפוש רב, נושא או שיעור",              filter:false},
+  ravs:      {ph:"חיפוש שם של רב",                        filter:true},
+  topics:    {ph:"חיפוש נושא",                            filter:true},
+  series:    {ph:"חיפוש סדרה ברשימה שנטענה",              filter:true},
+  channels:  {ph:"חיפוש ערוץ",                            filter:true},
+  hamchasha: {ph:"",                                       filter:false},
+  books:     {ph:"חיפוש ספר, עלון או גליון (ריק = החדשים ביותר)", filter:false},
+};
+let mode = "shiurim";
+let browseData = {};      // רשימות שהתקבלו מהשרת, לפי מצב
+let curSeriesRow = 0;
+
+/* ---------- שביל הניווט ----------
+   כל צעד הוא {label, go}. go מציג מחדש את המסך של אותו צעד ולעולם אינו מוסיף
+   צעד בעצמו - ולכן אפשר להריץ אותו שוב בלחיצה על השביל. הצעדים נדחפים בנקודות
+   הניווט (לחיצה על רב / נושא / מסכת), לא בפונקציות הרינדור: רינדור קורה גם
+   ב"טען עוד", בשינוי מיון ובכל תשובה שחוזרת מהשרת. */
+let trail = [];
+const MODE_LABEL = {};
+/* חץ המפריד בין הפירורים. ה-viewBox חתוך בדיוק לגבולות הצורה (x 8..16, y 6..18)
+   ולא לריבוע 24x24 המלא, כדי שלא ייווצר אוויר מת בצד אחד ויעוות את הריווח. */
+const CRUMB_SEP = '<svg width="6.5" height="11" viewBox="8 6 7 12" fill="none" stroke="currentColor"'
+  + ' stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"><path d="m14 7-5 5 5 5"/></svg>';
+
+function drawTrail(){
+  const el = $("#crumbs");
+  el.innerHTML = trail.map((t,i)=> i === trail.length-1
+    ? `<span class="cur">${esc(t.label)}</span>`
+    : `<button data-ci="${i}">${esc(t.label)}</button><span class="crumbsep">${CRUMB_SEP}</span>`
+  ).join("");
+  el.querySelectorAll("[data-ci]").forEach(b=> b.onclick = ()=>{
+    const i = parseInt(b.dataset.ci,10), step = trail[i];
+    trail = trail.slice(0, i+1);
+    drawTrail();
+    step.go();
+  });
+}
+/* ניווט צעד פנימה: מוסיף את היעד לשביל ומריץ אותו */
+function navTo(label, action){
+  trail.push({label:label||"", go:action});
+  drawTrail();
+  action();
+}
+/* כפתור "חזרה" = צעד אחד אחורה בשביל, בדיוק כמו לחיצה על הפירור הקודם.
+   מוחזר כמחרוזת ריקה במסך שורש, שאין לאן לחזור ממנו. הלחיצה מטופלת בהאצלה
+   ברמת המסמך, ולכן אין צורך לחבר אותו מחדש בכל רינדור. */
+function backBtn(){
+  return trail.length > 1
+    ? `<button class="backbtn" data-back="1">${ICONS.back}<span>חזרה</span></button>` : "";
+}
+document.addEventListener("click", e=>{
+  const b = e.target.closest && e.target.closest("[data-back]");
+  if(!b || trail.length < 2) return;
+  const step = trail[trail.length-2];
+  trail = trail.slice(0, trail.length-1);
+  drawTrail();
+  step.go();
+});
+
+function setMode(m){
+  mode = m;
+  trail = [{label: MODE_LABEL[m] || m, go: ()=> setMode(m)}];
+  drawTrail();
+  $("#modes").querySelectorAll("[data-m]").forEach(b=> b.classList.toggle("sel", b.dataset.m===m));
+  const cfg = MODES[m] || MODES.shiurim;
+  $("#q").value = "";
+  $("#q").placeholder = cfg.ph;
+  $("#q").parentElement.style.display = cfg.ph ? "" : "none";
+  $("#content").innerHTML = "";
+  $("#hint").style.display = "none";
+
+  if(m==="shiurim"){ $("#hint").style.display=""; return; }
+  if(m==="books"){ doSearch(); return; }
+  if(m==="hamchasha"){ openTextResults("המחשה"); return; }
+  if(m==="topics"){ topicPath = []; specialCtx = null; }
+  if(m==="ravs"){ browseData.ravs=null; loadRavs(0); return; }
+  if(m==="series"){ curSeriesRow=0; browseData.series=null; busyNow("טוען סדרות...");
+                    send({type:"browse", what:"series", fromRow:0, order:sortState.series.o, lang:sortState.series.l}); return; }
+  if(browseData[m]) renderBrowse(m);                       // נושאים/ערוצים - נשמרים במטמון
+  else { busyNow(); send({type:"browse", what:m, fromRow:0}); }
+}
+$("#modes").querySelectorAll("[data-m]").forEach(b=>{
+  MODE_LABEL[b.dataset.m] = b.textContent.trim();
+  b.onclick = ()=> setMode(b.dataset.m);
+});
+
+/* רשימת שיעורים לפי טקסט חופשי - QueryType=0 בצד השרת (כמו דף searchResults באתר) */
+function openTextResults(text){
+  curItem = {itemType:0, id:-1, bigId:-1, strId:"", text:text, fromRow:0};
+  sendCurItem();
+}
+
+function doSearch(){
+  const kw = $("#q").value.trim();
+  if(mode==="ravs"){ loadRavs(0); return; }                              // חיפוש בשרת
+  if(MODES[mode] && MODES[mode].filter){ renderBrowse(mode); return; }   // סינון מקומי
+  if(mode==="books"){
+    $("#hint").style.display="none";
+    curBooks = {text:kw, fromRow:0};
+    reloadBooks();
+    return;
+  }
+  if(!kw) return;
+  $("#hint").style.display="none";
+  navTo("חיפוש: " + kw, ()=>{
+    $("#content").innerHTML = "";
+    $("#hint").style.display = "none";
+    busyNow("מחפש...");
+    send({type:"search", keyword:kw});
+  });
+}
+$("#btnSearch").onclick = doSearch;
+$("#q").addEventListener("keydown", e => { if(e.key==="Enter") doSearch(); });
+
+$("#btnDownloads").onclick = ()=> toggleDrawer(true);
+$("#btnCloseDrawer").onclick = ()=> toggleDrawer(false);
+$("#scrim").onclick = ()=> toggleDrawer(false);
+$("#btnClearDone").onclick = ()=> send({type:"clearFinished"});
+$("#btnFolder").onclick = ()=> send({type:"openFolder"});
+$("#btnAdmin").onclick = ()=> send({type:"openAdmin"});
+// ללא סיסמת יציאה - סגירה מיידית בלחיצה אחת, בלי חלון אישור
+$("#btnExit").onclick = ()=> {
+  if(!needExitPass){ send({type:"requestExit", password:""}); return; }
+  $("#exPass").value="";
+  showOverlay("#exitOverlay");
+  setTimeout(()=> $("#exPass").focus(), 50);
+};
+$("#btnLogout").onclick = ()=> send({type:"logout"});
+$("#targetPill").onclick = ()=>{ send({type:"listTargets"}); showOverlay("#targetOverlay"); };
+$("#tgCancel").onclick = ()=> hideOverlay("#targetOverlay");
+$("#tgRefresh").onclick = ()=> send({type:"listTargets"});
+// דיאלוג בחירת התיקייה נפתח בתוכנה עצמה; החלון נשאר פתוח, ורשימת היעדים
+// מתרעננת מאליה כשהתוכנה שולחת אותה מחדש עם הנתיב החדש.
+$("#tgFolder").onclick = ()=> send({type:"pickTargetFolder"});
+
+function toggleDrawer(open){ $("#drawer").classList.toggle("open",open); $("#scrim").classList.toggle("show",open); }
+function showOverlay(s){ $(s).classList.add("show"); }
+function hideOverlay(s){ $(s).classList.remove("show"); }
+
+$("#liCancel").onclick = ()=>{ hideOverlay("#loginOverlay"); pendingDownload=null; };
+$("#liOk").onclick = ()=> doLogin();
+$("#liSite").onclick = ()=>{ send({type:"openSiteLogin"}); toast("נפתח חלון התחברות"); };
+$("#liPass").addEventListener("keydown", e=>{ if(e.key==="Enter") doLogin(); });
+$("#liUser").addEventListener("keydown", e=>{ if(e.key==="Enter") $("#liPass").focus(); });
+$("#loginPill").onclick = ()=> loggedIn ? send({type:"logout"}) : openLogin();
+
+function openLogin(){
+  if(!loginEnabled) return;
+  $("#liPass").value="";
+  showOverlay("#loginOverlay");
+  setTimeout(()=>{ ($("#liUser").value ? $("#liPass") : $("#liUser")).focus(); },50);
+}
+function doLogin(){
+  const u=$("#liUser").value.trim(), p=$("#liPass").value;
+  if(!u || !p){ toast("יש להזין שם משתמש וסיסמה"); return; }
+  send({type:"login", username:u, password:p, remember:false});
+}
+$("#exCancel").onclick = ()=> hideOverlay("#exitOverlay");
+$("#exOk").onclick = ()=> send({type:"requestExit", password:$("#exPass").value});
+$("#exPass").addEventListener("keydown", e=>{ if(e.key==="Enter") $("#exOk").click(); });
+
+// סיסמת יציאה היא אופציונלית (כבויה כברירת מחדל) - ניתנת להפעלה בחלון הניהול
+let needExitPass = false;
+function setExitMode(on){
+  needExitPass = !!on;
+  $("#exPassWrap").style.display = needExitPass ? "" : "none";
+  $("#exText").textContent = needExitPass ? "הזינו את סיסמת היציאה כדי לסגור את התוכנה." : "לסגור את התוכנה?";
+}
+
+function requestDownload(fileId, quality, title, rav, topic){
+  const payload = {type:"download", fileId, quality, title, rav, topic};
+  // ההורדות אינן דורשות חשבון קול הלשון. הדרישה להתחבר נשארת רק כשמסך ההתחברות
+  // הופעל במפורש בהגדרות (showLogin), כדי שהקוד יישאר שמיש בעתיד.
+  if(loginEnabled && !loggedIn){ pendingDownload = payload; showOverlay("#loginOverlay"); return; }
+  send(payload); toast("נוסף לתור ההורדות"); bumpBadge();
+}
+
+/* ---------- Search results ---------- */
+function renderSearch(msg){
+  const items = msg.items || [];
+  const rabbanim = items.filter(x=>x.SearchItemType===2);
+  const others   = items.filter(x=>x.SearchItemType!==2);
+  const c = $("#content");
+  let h = `<div class="crumb"><div class="title">תוצאות חיפוש<small>${esc(msg.keyword)}</small></div></div>`;
+  if(rabbanim.length){
+    h += `<div class="sectionlabel">רבנים</div><div class="ravgrid">`;
+    for(const r of rabbanim){
+      h += `<button class="ravcard" data-rav="${r.SearchItemId}" data-name="${esc(r.SearchItemTextHebrew)}" data-img="${esc(r.SearchItemStrId||"")}">
+        ${ravAvatar(r.SearchItemStrId)}
+        <span style="min-width:0"><span class="nm">${esc(r.SearchItemTextHebrew)}</span>
+        <span class="en">${esc(r.SearchItemTextEnglish||"")}</span></span>
+        <span class="go">${ICONS.chev}</span></button>`;
+    }
+    h += `</div>`;
+  }
+  if(others.length){
+    h += `<div class="sectionlabel">תוצאות נוספות</div>`;
+    for(const o of others){
+      const txt = o.SearchItemTextHebrew||o.SearchItemTextEnglish||"";
+      // סוג 10 = שיעור בודד (מזהה הקובץ ב-SearchItemBigId) -> נפתח לכרטיס הורדה.
+      // כל השאר (נושא/קטגוריה/סדרה/ספר) -> חיפוש חוזר לפי הטקסט, כמו באתר עצמו.
+      const isShiur = o.SearchItemType===10 && o.SearchItemBigId;
+      const it = esc(JSON.stringify({itemType:o.SearchItemType, id:o.SearchItemId==null?-1:o.SearchItemId,
+        bigId:o.SearchItemBigId==null?-1:o.SearchItemBigId, strId:o.SearchItemStrId||"", text:txt}));
+      h += `<div class="shiur clickable" data-t="${esc(txt)}" data-${isShiur?`shiur="${o.SearchItemBigId}"`:`item="${it}"`}>
+        <div class="body"><div class="t">${esc(txt)}</div>
+        <div class="meta"><span class="chip">${typeName(o.SearchItemType)}</span>
+        <span class="chip">${isShiur?"פתיחה והורדה":"הצג שיעורים"}</span></div></div>
+        <div class="go">${ICONS.chev}</div></div>`;
+    }
+  }
+  if(!rabbanim.length && !others.length)
+    h += emptyState("לא נמצאו תוצאות","נסו ניסוח אחר או שם מלא של הרב.");
+  c.innerHTML = h;
+  c.querySelectorAll(".ravcard").forEach(b=> b.onclick=()=>{
+    const id=parseInt(b.dataset.rav,10), nm=b.dataset.name, im=b.dataset.img;
+    navTo(nm, ()=> openRav(id, nm, im));
+  });
+  c.querySelectorAll("[data-shiur]").forEach(b=> b.onclick=()=>{
+    const id = parseInt(b.dataset.shiur,10), nm = b.dataset.t || "שיעור";
+    navTo(nm, ()=>{ busy(true,"טוען שיעור..."); send({type:"openShiur", fileId:id}); });
+  });
+  c.querySelectorAll("[data-item]").forEach(b=> b.onclick=()=>{
+    const it = JSON.parse(b.dataset.item.replace(/&quot;/g,'"').replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">"));
+    navTo(it.text, ()=>{
+      curItem = Object.assign({}, it, {fromRow:0});
+      $("#content").innerHTML="";
+      send(Object.assign({type:"openSearchItem"}, curItem));
+    });
+  });
+}
+// סוגי פריטים לפי האתר: 2=רב, 9=סדרה, 10=שיעור, 12=קטגוריה; 3-8=נושאים/ספרים
+function typeName(t){
+  switch(t){ case 9: return "סדרה"; case 10: return "שיעור"; case 12: return "קטגוריה";
+             case 8: return "ספר"; default: return "נושא"; }
+}
+function emptyState(t,s){ return `<div class="empty"><div class="ill">${ICONS.search}</div><h2>${t}</h2><p>${s}</p></div>`; }
+
+/* ---------- תמונות הרבנים ----------
+   מוגשות ישירות מהאתר: https://www.kolhalashon.com/imgs/Ravs/<שם קובץ>. שם הקובץ מגיע
+   מהשרת - RavImageFileName בשיעורים ובספרים, SearchItemStrId בהצעות החיפוש (שם הרב) -
+   ולעתים הוא null. אלה קבצים סטטיים שאינם עוברים ב-API, ולכן Cloudflare אינו מאתגר אותם
+   ואין צורך בדפדפן הנסתר. קובץ חסר מוחזר דווקא בקוד 200 עם תמונת ברירת מחדל של האתר,
+   ולכן onerror הוא רק רשת ביטחון (למשל כשאין חיבור) שחושפת את האייקון שמתחת. */
+const RAV_IMG_BASE  = "https://www.kolhalashon.com/imgs/Ravs/";
+/* מטמון מקומי: התמונות נשמרות בתיקייה במחשב ומוגשות ממארח וירטואלי, כך שאין פנייה
+   לרשת בכלל. השרת מגיש אותן עם max-age של 4 שעות בלבד, ולכן בלי המטמון הדפדפן חוזר
+   אליו כמה פעמים ביום. תמונה שעדיין לא במטמון פשוט תיכשל כאן - ואז onerror מחליף
+   לכתובת החיה ומבקש מהתוכנה להוריד אותה לפעם הבאה. */
+const RAV_CACHE_BASE = "https://khl-cache/";
+function ravImgUrl(file){
+  return /^[A-Za-z0-9_\-]+\.(jpe?g|png|gif)$/i.test(file||"") ? RAV_CACHE_BASE + file : "";
+}
+/* נקרא מתוך onerror של כל תמונה */
+function ravImgFallback(img){
+  const file = img.getAttribute("data-f") || "";
+  if(img.dataset.tried){ img.remove(); return; }   // גם הכתובת החיה נכשלה - חושפים את האייקון
+  img.dataset.tried = "1";
+  img.src = RAV_IMG_BASE + file;
+  send({type:"cacheRavImg", file:file});
+}
+/* עיגול תמונה גדול - לכרטיס רב ולכותרת עמוד הרב */
+function ravAvatar(file){
+  const u = ravImgUrl(file);
+  return `<span class="avatar">${u?`<img src="${u}" data-f="${esc(file)}" alt="" loading="lazy" onerror="ravImgFallback(this)">`:""}${ICONS.user}</span>`;
+}
+/* התג הקטן שליד שם הרב בשורת שיעור/ספר - תמונה במקום אייקון, כשיש.
+   כשידוע מזהה הרב התג הופך לקישור לעמוד השיעורים שלו, כמו באתר. בעמוד של אותו
+   רב עצמו הוא נשאר טקסט, כי אין טעם בקישור שמוביל לאותו מסך. */
+function ravChip(name, file, ravId){
+  const u = ravImgUrl(file);
+  const ic = u ? `<img src="${u}" data-f="${esc(file)}" alt="" loading="lazy" onerror="ravImgFallback(this)">`
+                : ICONS.user.replace(/width="20" height="20"/,'width="13" height="13"');
+  const nm = esc(name||"");
+  if(!ravId || ravId === curRav.id) return `<span class="chip rav">${ic}${nm}</span>`;
+  return `<button class="chip rav ravlink" data-ravid="${ravId}" data-ravnm="${nm}"
+    data-ravimg="${esc(file||"")}" title="לשיעורי ${nm}">${ic}${nm}</button>`;
+}
+
+/* ---------- Rav shiurim ---------- */
+let curRav = {id:null, name:"", img:"", fromRow:0};
+function openRav(id, name, img){ curRav={id,name:name||"",img:img||"",fromRow:0}; $("#content").innerHTML=""; send({type:"openRav",ravId:id,fromRow:0}); }
+function renderRavShiurim(msg){
+  const list = msg.shiurim || [];
+  const c = $("#content");
+  if(msg.fromRow===0){
+    // אם הגענו לרב דרך מסלול שאין בו תמונה (למשל מנוי או קישור), משלימים אותה מהשיעור הראשון
+    if(!curRav.img && list.length) curRav.img = list[0].RavImageFileName || "";
+    c.innerHTML = `<div class="crumb">${backBtn()}${ravAvatar(curRav.img)}
+      <div class="title">${esc(curRav.name||"שיעורי הרב")}</div></div><div id="shiurList"></div>`;
+  }
+  const box = $("#shiurList");
+  const om = document.getElementById("moreBtn"); if(om) om.remove();
+  for(const s of list) box.insertAdjacentHTML("beforeend", shiurRow(s));
+  if(list.length >= 24){
+    const b=document.createElement("button"); b.className="loadmore"; b.id="moreBtn";
+    b.innerHTML = ICONS.download + "<span>טען עוד שיעורים</span>";
+    b.onclick=()=>{ curRav.fromRow+=24; send({type:"openRav",ravId:curRav.id,fromRow:curRav.fromRow}); };
+    box.appendChild(b);
+  }
+  bindShiur(box);
+  if(msg.fromRow===0 && list.length===0)
+    box.innerHTML = emptyState("אין שיעורים","לא נמצאו שיעורים לרב זה.");
+}
+function shiurRow(s){
+  const title=esc(s.TitleHebrew||"שיעור");
+  const topic=esc(s.CatDesc1||s.MainTopicHebrew||""), dur=esc(s.ShiurDuration||"");
+  const date=esc(hebDate(s));
+  let meta=ravChip(s.UserNameHebrew||curRav.name||"", s.RavImageFileName||curRav.img, s.UserId);
+  if(dur) meta+=`<span class="chip">${ICONS.clock}${dur}</span>`;
+  if(date) meta+=`<span class="chip">${ICONS.cal}${date}</span>`;
+  if(topic) meta+=`<span class="chip">${topic}</span>`;
+  const d = JSON.stringify({fileId:s.FileId,title:s.TitleHebrew||"שיעור",rav:s.UserNameHebrew||curRav.name||"",topic:s.CatDesc1||s.MainTopicHebrew||""}).replace(/"/g,"&quot;");
+  let btns="";
+  // כל ההורדות עוברות בכתובות הישירות של האתר (שמע בנגן, וידאו ב-HLS), ולכן הדגל
+  // DisableDownload - שחוסם רק את מסלול מפתח ההורדה הישן - אינו רלוונטי יותר.
+  // משולש האזנה: מזרים את השיעור בנגן שבתחתית המסך, בלי להוריד אותו.
+  // במצב קיוסק שבו ההורדה היא להתקנים בלבד אין האזנה במקום, ולכן הוא אינו מוצג.
+  if(s.HasAudio && s.FileId && !deviceOnly) btns+=`<button class="pl" data-play="${s.FileId}" data-s="${d}" title="האזנה לשיעור">${ICONS.play}</button>`;
+  if(s.HasAudio) btns+=`<button class="dl audio" data-q="audio" data-s="${d}">${ICONS.download}שמע</button>`;
+  // צפייה בהזרמה. HD מועדף כשהוא מותר וקיים, אחרת האיכות הרגילה.
+  const canVid = (s.HasHdVideo && allowHd) || (s.HasVideo && allowVideo);
+  if(canVid && s.FileId && !deviceOnly)
+    btns+=`<button class="pl vid" data-vid="${s.FileId}" data-hd="${(s.HasHdVideo&&allowHd)?1:0}" data-s="${d}" title="צפייה בשיעור">${ICONS.vplay}</button>`;
+  if(s.HasVideo && allowVideo) btns+=`<button class="dl ghost" data-q="video" data-s="${d}">${ICONS.download}וידאו</button>`;
+  if(s.HasHdVideo && allowHd) btns+=`<button class="dl ghost" data-q="hd" data-s="${d}">${ICONS.download}HD</button>`;
+  if(!btns) btns=`<button class="dl ghost" disabled>אין קובץ</button>`;
+  // מזהה השיעור הוא גם הקוד להאזנה בטלפון - בדיוק כפי שהאתר מציג אותו על כל כרטיס
+  if(s.FileId) btns = `<span class="phcode" data-fid="${s.FileId}">${ICONS.phone}${s.FileId}</span>` + btns;
+  return `<div class="shiur"><div class="body"><div class="t">${title}</div><div class="meta">${meta}</div></div><div class="actions">${btns}</div></div>`;
+}
+/* רשימת שיעורים של נושא/קטגוריה/סדרה שנבחרו מתוך "תוצאות נוספות" */
+let curItem = null;
+function renderSearchShiurim(msg){
+  const list = msg.shiurim || [];
+  // 77 הנושאים לא נבדקו אחד-אחד. אם נושא לא החזיר שיעורים, מנסים פעם אחת
+  // כחיפוש חופשי לפי שמו במקום להציג מסך ריק בלי הסבר.
+  if(!msg.fromRow && list.length===0 && curItem && curItem.kind==="subject" && !curItem.retried){
+    // (בלימוד יומי יום ריק הוא מצב תקין ולא סיבה לחיפוש חלופי)
+    const name = curItem.text;
+    curItem = {itemType:0, id:-1, bigId:-1, strId:"", text:name, fromRow:0, retried:true};
+    sendCurItem();
+    return;
+  }
+  const c = $("#content");
+  if(!msg.fromRow){
+    curRav = {id:null, name:"", fromRow:0};
+    c.innerHTML = `<div class="crumb">${backBtn()}<div class="title">${esc(msg.text||"שיעורים")}</div></div>`
+      + (curItem && curItem.kind==="daily" ? `<div class="datebar" id="dateBar"></div>` : "")
+      + sortBar("shiurim", Object.keys(LANGS).map(Number)) + `<div id="shiurList"></div>`;
+    bindSortBar(c, ()=>{ if(curItem){ curItem.fromRow=0; sendCurItem(); } });
+    drawDateBar();
+  }
+  const box = $("#shiurList");
+  const om = document.getElementById("moreBtn"); if(om) om.remove();
+  for(const s of list) box.insertAdjacentHTML("beforeend", shiurRow(s));
+  if(list.length >= 24 && curItem){
+    const b=document.createElement("button"); b.className="loadmore"; b.id="moreBtn";
+    b.innerHTML = ICONS.download + "<span>טען עוד שיעורים</span>";
+    b.onclick=()=>{ curItem.fromRow=(curItem.fromRow||0)+24; sendCurItem(); };
+    box.appendChild(b);
+  }
+  bindShiur(box);
+  if(!msg.fromRow && list.length===0)
+    box.innerHTML = emptyState("אין שיעורים","לא נמצאו שיעורים לפריט זה.");
+}
+
+/* ---------- מסכי עיון: רבנים / נושאים / סדרות / ערוצים ---------- */
+function loadRavs(fromRow){
+  browseData.ravsRow = fromRow;
+  busyNow("טוען רבנים...");
+  send({type:"browse", what:"ravs", fromRow:fromRow,
+        order:sortState.ravs.o, lang:sortState.ravs.l, text:$("#q").value.trim()});
+}
+
+function onBrowseList(m){
+  const items = m.items || [];
+  if(m.what==="ravs"){
+    // הספירה מחזירה שורה ראשונה עם הסך הכל, ואחריה שורה לכל שפה שיש לה תוצאות.
+    if(Array.isArray(m.count) && m.count.length){
+      browseData.ravsCount = m.count[0].VarInt || 0;
+      ravLangs = m.count.slice(1).map(r=>r.VarInt).filter(id=>LANGS[id]);
+    }
+    browseData.ravsRow = m.fromRow;
+    browseData.ravs = (m.fromRow ? (browseData.ravs||[]) : []).concat(items);
+    if(mode==="ravs") renderBrowse("ravs");
+    return;
+  }
+  if(m.what==="parashot" || m.what==="humashim" || m.what==="masechtot"
+     || m.what==="nach" || m.what==="moadim"){
+    browseData[m.what] = items;
+    if(specialCtx && (m.what===specialCtx.kind || m.what==="humashim")) renderSpecial();
+    return;
+  }
+  if(m.what==="series"){
+    browseData.series = (m.fromRow ? (browseData.series||[]) : []).concat(items);
+    curSeriesRow = m.fromRow;
+    browseData.seriesMore = items.length >= 24;
+  } else {
+    browseData[m.what] = items;
+  }
+  if(mode===m.what) renderBrowse(m.what);
+}
+
+function renderBrowse(what){
+  const c = $("#content");
+  const kw = $("#q").value.trim();
+  let rows = browseData[what] || [];
+
+  if(what==="ravs"){
+    // הרשימה, המיון והסינון נעשים בשרת (WebSite_SearchRav) - כמו בדף הרבנים באתר.
+    const total = browseData.ravsCount || 0;
+    c.innerHTML = `<div class="crumb"><div class="title">רבנים<small>${total.toLocaleString("he-IL")} רבנים בקול הלשון</small></div></div>`
+      + sortBar("ravs", ravLangs)
+      + (rows.length
+          ? `<div class="glist" id="ravList">${rows.map(r=>
+              `<button class="gitem" data-rav="${r.UserId}" data-nm="${esc(r.RavSearchNameHebrew||"")}" data-img="${esc(r.RavImageFileName||"")}">${ravAvatar(r.RavImageFileName)}
+                <span>${esc(r.RavSearchNameHebrew||"")}<small>${(r.ShiurimCount||0).toLocaleString("he-IL")} שיעורים</small></span></button>`).join("")}</div>`
+          : emptyState("לא נמצא רב","נסו חלק אחר של השם."));
+    bindSortBar(c, ()=> loadRavs(0));
+    if(rows.length >= 24){
+      const b=document.createElement("button"); b.className="loadmore";
+      b.innerHTML = ICONS.download + "<span>טען עוד רבנים</span>";
+      b.onclick=()=> loadRavs(browseData.ravsRow + 24);
+      $("#ravList").appendChild(b);
+    }
+    c.querySelectorAll("[data-rav]").forEach(b=> b.onclick=()=>{
+      const id=parseInt(b.dataset.rav,10), nm=b.dataset.nm||"", im=b.dataset.img||"";
+      navTo(nm, ()=> openRav(id, nm, im));
+    });
+    return;
+  }
+
+  if(what==="topics"){ renderTopics(); return; }
+
+  if(what==="channels"){
+    rows = (browseData.channels||[]).filter(ch => !ch.ChannelInactive && ch.ChannelDesc);
+    if(kw) rows = rows.filter(ch => ch.ChannelDesc.includes(kw));
+    rows.sort((a,b)=> (a.ChannelOrder||0)-(b.ChannelOrder||0));
+    c.innerHTML = rows.length
+      ? `<div class="crumb"><div class="title">ערוצי תורה<small>${rows.length}</small></div></div>` +
+        `<div class="glist">${rows.map(ch=>
+          `<button class="gitem" data-cat="${esc(ch.ChannelCatId)}" data-nm="${esc(ch.ChannelDesc)}">${ICONS.radio}
+            <span>${esc(ch.ChannelDesc)}</span></button>`).join("")}</div>`
+      : emptyState("לא נמצא ערוץ","נסו מילה אחרת.");
+    bindCat(c);
+    return;
+  }
+
+  if(what==="series"){
+    let all = browseData.series || [];
+    if(kw) all = all.filter(x => (x.CatDesc||"").includes(kw) || (x.UserNameHebrew||"").includes(kw));
+    c.innerHTML = `<div class="crumb"><div class="title">סדרות שיעורים<small>${all.length} נטענו</small></div></div>`
+      + sortBar("series", Object.keys(LANGS).map(Number))
+      + `<div class="glist" id="serList">${all.map(x=>
+        `<button class="gitem" data-cat="${esc(x.CatId)}" data-nm="${esc(x.CatDesc||"")}">${ICONS.queue}
+          <span>${esc(x.CatDesc||"סדרה")}<small>${esc(x.UserNameHebrew||"")}${x.FileCount?" · "+x.FileCount+" שיעורים":""}</small></span></button>`).join("")}</div>`;
+    bindSortBar(c, ()=>{ browseData.series=null; curSeriesRow=0; busyNow("טוען סדרות...");
+      send({type:"browse", what:"series", fromRow:0, order:sortState.series.o, lang:sortState.series.l}); });
+    if(browseData.seriesMore && !kw){
+      const b=document.createElement("button"); b.className="loadmore";
+      b.innerHTML = ICONS.download + "<span>טען עוד סדרות</span>";
+      b.onclick=()=>{ busyNow("טוען סדרות..."); send({type:"browse", what:"series", fromRow:curSeriesRow+24}); };
+      $("#serList").appendChild(b);
+    }
+    bindCat(c);
+    return;
+  }
+}
+
+/* ---------- עץ הנושאים ----------
+   99 צמתים עם ParentSubjectId/DisplayOrder, מתוכם 77 עלים. הניווט נכנס פנימה
+   רמה-רמה בדיוק לפי ההיררכיה של האתר. בחיפוש חופשי מוצג העץ "שטוח" - כל נושא
+   שמתאים למילה, עם שובל האבות שלו - כדי שאפשר יהיה למצוא בלי לדעת איפה הוא יושב. */
+let topicPath = [];    // שרשרת האבות שבה אנחנו נמצאים כרגע
+
+function topicKids(pid){
+  return sortTopics((browseData.topics||[])
+    .filter(t => t.ParentSubjectId === pid && t.ShowOnWebSite !== false && t.SubjectTitleHebrew));
+}
+function topicTrail(t){
+  const byId = {}; for(const x of (browseData.topics||[])) byId[x.SubjectId]=x;
+  const names=[]; let p=t.ParentSubjectId;
+  while(p && byId[p]){ names.unshift(byId[p].SubjectTitleHebrew); p=byId[p].ParentSubjectId; }
+  return names.join(" › ");
+}
+
+function renderTopics(){
+  const c = $("#content"), kw = $("#q").value.trim();
+  const cur = topicPath.length ? topicPath[topicPath.length-1] : null;
+
+  // בתוך קטגוריה, או בחיפוש - רשימה אחת
+  if(cur || kw){
+    let rows, title, sub;
+    if(kw){
+      rows = (browseData.topics||[]).filter(t => t.ShowOnWebSite!==false && t.SubjectTitleHebrew
+                                                 && t.SubjectTitleHebrew.includes(kw));
+      rows = sortTopics(rows);
+      title = "נושאים"; sub = rows.length + " תוצאות";
+    } else {
+      rows = topicKids(cur.SubjectId);
+      title = cur.SubjectTitleHebrew; sub = topicTrail(cur);
+    }
+    const head = `<div class="crumb">${backBtn()}<div class="title">${esc(title)}<small>${esc(sub)}</small></div></div>`;
+    c.innerHTML = head + sortBar("topics", null)
+      + (rows.length ? topicGrid(rows, kw) : emptyState("לא נמצא נושא","נסו מילה אחרת."));
+    afterTopics(c);
+    return;
+  }
+
+  // מסך ראשי: קטגוריות (11 השורשים) ומתחתן כל הנושאים (77 העלים) - כמו באתר
+  const cats = topicKids(null);
+  const leaves = sortTopics((browseData.topics||[])
+    .filter(t => t.IsLeaf && t.ShowOnWebSite!==false && t.SubjectTitleHebrew));
+
+  c.innerHTML = sortBar("topics", null)
+    + `<div class="sectionhead"><h3>קטגוריות</h3><span>${cats.length}</span></div>`
+    + topicGrid(cats, false)
+    + `<div class="sectionhead"><h3>נושאים</h3><span>${leaves.length}</span></div>`
+    + topicGrid(leaves, false);
+  afterTopics(c);
+}
+
+function sortTopics(rows){
+  const o = sortState.topics.o;
+  return rows.slice().sort((a,b)=>{
+    if(o===2) return a.SubjectTitleHebrew.localeCompare(b.SubjectTitleHebrew,"he");
+    if(o===3) return b.SubjectTitleHebrew.localeCompare(a.SubjectTitleHebrew,"he");
+    return (a.DisplayOrder||0)-(b.DisplayOrder||0);
+  });
+}
+
+function topicGrid(rows, showTrail){
+  return `<div class="glist">${rows.map(t=>{
+    const kids = topicKids(t.SubjectId).length;
+    const note = showTrail ? topicTrail(t) : (kids ? kids+" תת-נושאים" : "");
+    return `<button class="gitem" data-sid="${t.SubjectId}">${kids?ICONS.folder:ICONS.tag}
+      <span>${esc(t.SubjectTitleHebrew)}${note?`<small>${esc(note)}</small>`:""}</span></button>`;
+  }).join("")}</div>`;
+}
+
+function afterTopics(c){
+  bindSortBar(c, renderTopics);
+  c.querySelectorAll("[data-sid]").forEach(b=> b.onclick=()=>{
+    const t = (browseData.topics||[]).find(x=> String(x.SubjectId)===b.dataset.sid);
+    if(!t) return;
+    const name = t.SubjectTitleHebrew;
+    if(SPECIAL_TOPICS[t.SubjectId]){ navTo(name, ()=> openSpecialTopic(t)); return; }
+    if(topicKids(t.SubjectId).length){
+      // המסלול נלכד עכשיו, כדי שחזרה דרך השביל תשחזר בדיוק את אותה רמה בעץ
+      const path = topicPath.concat([t]);
+      navTo(name, ()=>{ topicPath = path.slice(); specialCtx = null; $("#q").value=""; renderTopics(); });
+      return;
+    }
+    // mainId תלוי במסלול שבו אנחנו נמצאים כרגע, ולכן הוא מחושב פעם אחת בלחיצה
+    const mainId = subjectMainId(t);
+    navTo(name, ()=> openSubject(t, mainId));
+  });
+}
+
+/* ---------- לימוד יומי ----------
+   מזהי הנושאים האלה הם גם המזהים של פונקציות "הלימוד של היום" אצל קול הלשון,
+   ולכן הם נפתחים עם תאריך: אפשר לדפדף יום קדימה/אחורה או לבחור תאריך עברי. */
+const DAILY_TOPICS = {91:1, 92:1, 93:1, 94:1, 95:1, 96:1, 97:1, 104:1};
+let dailyState = null;      // {id, parentId, name, date, info}
+
+function openDaily(t, parentId){
+  dailyState = {id:t.SubjectId, parentId:parentId, name:t.SubjectTitleHebrew, date:null, info:null};
+  curItem = {kind:"daily", text:t.SubjectTitleHebrew, fromRow:0};
+  sendCurItem();
+}
+function dailyShift(days){
+  if(!dailyState) return;
+  const base = dailyState.date ? new Date(dailyState.date + "T12:00:00") : new Date();
+  base.setDate(base.getDate() + days);
+  dailyState.date = base.getFullYear() + "-" +
+    String(base.getMonth()+1).padStart(2,"0") + "-" + String(base.getDate()).padStart(2,"0");
+  curItem.fromRow = 0;
+  sendCurItem();
+}
+function onDailyInfo(m){
+  if(!dailyState) return;
+  dailyState.info = m;
+  dailyState.date = m.date;
+  drawDateBar();
+}
+function drawDateBar(){
+  const host = document.getElementById("dateBar");
+  if(!host || !dailyState || !dailyState.info) return;
+  const i = dailyState.info;
+  host.innerHTML =
+    `<button data-dd="-1">${ICONS.chevR}הקודם</button>
+     <div class="cur">${esc(i.hebText||"")}</div>
+     <button data-dd="1">הבא${ICONS.chev}</button>
+     <button data-today="1">היום</button>
+     <button data-pick="1">בחירת תאריך</button>` +
+    (i.title ? `<div class="lim">${esc(i.title)}</div>` : "");
+  host.querySelectorAll("[data-dd]").forEach(b=> b.onclick=()=> dailyShift(parseInt(b.dataset.dd,10)));
+  host.querySelector("[data-today]").onclick = ()=>{ dailyState.date=null; curItem.fromRow=0; sendCurItem(); };
+  host.querySelector("[data-pick]").onclick = drawHebPicker;
+}
+/* מספר עברי לימי החודש: א..ט, י, יא..יט (טו/טז חריגים), כ, כא..כט, ל */
+function hebNum(n){
+  const ones = ["","א","ב","ג","ד","ה","ו","ז","ח","ט"];
+  const tens = ["","י","כ","ל"];
+  if(n === 15) return "טו";
+  if(n === 16) return "טז";
+  return tens[Math.floor(n/10)] + ones[n%10];
+}
+
+function drawHebPicker(){
+  const host = document.getElementById("dateBar");
+  const i = dailyState && dailyState.info;
+  if(!host || !i) return;
+  const mo = (i.months||[]).find(x=> x.n===i.hm) || {days:30};
+  const opt = (arr, sel, val, txt) => arr.map(x=>
+    `<option value="${val(x)}"${val(x)===sel?" selected":""}>${esc(txt(x))}</option>`).join("");
+  const days = [];
+  for(let d=1; d<=(mo.days||30); d++) days.push(d);
+  host.insertAdjacentHTML("beforeend",
+    `<div class="hebpick">
+       <select id="hpD">${opt(days, i.hd, x=>x, x=>hebNum(x))}</select>
+       <select id="hpM">${opt(i.months||[], i.hm, x=>x.n, x=>x.name)}</select>
+       <select id="hpY">${opt(i.years||[], i.hy, x=>x.n, x=>x.name)}</select>
+       <button id="hpGo">הצג</button>
+     </div>`);
+  document.getElementById("hpGo").onclick = ()=>{
+    send({type:"hebPick", y:parseInt($("#hpY").value,10),
+          m:parseInt($("#hpM").value,10), d:parseInt($("#hpD").value,10)});
+  };
+  // החלפת חודש/שנה מרעננת את רשימת הימים לפי אורך החודש
+  for(const id of ["#hpM","#hpY"]) $(id).onchange = ()=>{
+    const months = i.months||[];
+    const sel = months.find(x=> x.n===parseInt($("#hpM").value,10)) || {days:30};
+    const cur = Math.min(parseInt($("#hpD").value,10)||1, sel.days||30);
+    const dd = []; for(let d=1; d<=(sel.days||30); d++) dd.push(d);
+    $("#hpD").innerHTML = dd.map(d=>`<option value="${d}"${d===cur?" selected":""}>${hebNum(d)}</option>`).join("");
+  };
+}
+
+/* פתיחת נושא-עלה. השרת דורש שני מזהים: נושא-אב כלשהו בשרשרת, והנושא עצמו.
+   האב נלקח מהמסלול שבו ניווטנו, ואם הגענו דרך חיפוש - מההורה שרשום בנתונים. */
+function subjectMainId(t){
+  let mainId = -1;
+  if(topicPath.length) mainId = topicPath[topicPath.length-1].SubjectId;
+  else if(t.ParentSubjectId) mainId = t.ParentSubjectId;
+  return mainId < 0 ? t.SubjectId : mainId;
+}
+function openSubject(t, mainId){
+  if(mainId === undefined) mainId = subjectMainId(t);
+  if(DAILY_TOPICS[t.SubjectId]){ openDaily(t, mainId); return; }
+  curItem = {kind:"subject", mainId:mainId, subjectId:t.SubjectId,
+             text:t.SubjectTitleHebrew, fromRow:0};
+  sendCurItem();
+}
+
+/* ---------- כותרות ברשימות ----------
+   הכותרות אינן המצאה שלנו: הן כבר בנתונים שהשרת מחזיר, רק לא הצגנו אותן -
+   פרשות לפי HumashId, מסכתות לפי SederId, נ"ך לפי NaviKtuvim, מועדים לפי ParentId. */
+function sectionHead(title, count){
+  return `<div class="sectionhead"><h3>${esc(title)}</h3><span>${count}</span></div>`;
+}
+/* groups = [{title, rows}]. קבוצה ריקה נשמטת (חשוב בחיפוש חופשי), וכותרת ריקה
+   מציגה רשימה רגילה בלי כותרת - למשל כשרשימת החומשים עדיין לא הגיעה מהשרת. */
+function groupedList(groups, item){
+  return groups.filter(g => g.rows.length).map(g =>
+    (g.title ? sectionHead(g.title, g.rows.length) : "") +
+    `<div class="glist">${g.rows.map(item).join("")}</div>`).join("");
+}
+/* מקבץ שורות לפי מפתח, בסדר שנקבע ברשימת המפתחות; מה שלא נמצא נופל ל"אחר" */
+function groupBy(rows, keyOf, order, nameOf, restTitle){
+  const groups = order.map(k => ({title:nameOf(k), rows:rows.filter(r => keyOf(r) === k)}));
+  const known = new Set(order);
+  const rest = rows.filter(r => !known.has(keyOf(r)));
+  if(rest.length) groups.push({title:(order.length ? restTitle : null), rows:rest});
+  return groups;
+}
+
+/* חמשת הענפים שהאתר בונה ממקורות נתונים נפרדים.
+   QueryType: 5=פרשה, 1=תלמוד בבלי, 8=תלמוד ירושלמי. */
+const SPECIAL_TOPICS = {
+  1:   {kind:"parashot",  title:"פרשת השבוע"},
+  22:  {kind:"nach",      title:"נ\"ך"},
+  23:  {kind:"moadim",    title:"מעגל השנה"},
+  99:  {kind:"masechtot", title:"משנה",          shas:"mishna"},
+  100: {kind:"masechtot", title:"תלמוד בבלי",    shas:"bavli"},
+  101: {kind:"masechtot", title:"תלמוד ירושלמי", shas:"yerushalmi"},
+};
+let specialCtx = null;
+
+function openSpecialTopic(t){
+  specialCtx = Object.assign({subjectId:t.SubjectId}, SPECIAL_TOPICS[t.SubjectId]);
+  const what = specialCtx.kind;
+  if(browseData[what]) renderSpecial();
+  else { busyNow(); send({type:"browse", what:what, fromRow:0}); }
+  if(what==="parashot" && !browseData.humashim) send({type:"browse", what:"humashim", fromRow:0});
+}
+
+function renderSpecial(){
+  if(!specialCtx) return;
+  const c = $("#content"), kw = $("#q").value.trim();
+  let head = `<div class="crumb">${backBtn()}<div class="title">${esc(specialCtx.title)}</div></div>`;
+
+  if(specialCtx.kind==="parashot"){
+    const hum = {};
+    for(const h of (browseData.humashim||[])) hum[h.HumashId] = h.HumashNameHebrew;
+    let rows = (browseData.parashot||[]).filter(x=>x.ParashaNameHebrew);
+    if(kw) rows = rows.filter(x=> x.ParashaNameHebrew.includes(kw));
+    // כותרת לכל חומש, בסדר שהשרת מחזיר את החומשים (בראשית -> דברים)
+    const humOrder = (browseData.humashim||[]).map(h=> h.HumashId);
+    const groups = groupBy(rows, x=> x.HumashId, humOrder,
+                           id=> "חומש " + (hum[id]||""), "פרשות נוספות");
+    c.innerHTML = head + groupedList(groups, x=>
+      `<button class="gitem" data-par="${x.ParashaId}" data-nm="${esc(x.ParashaNameHebrew)}">${ICONS.book}
+        <span>${esc(x.ParashaNameHebrew)}</span></button>`);
+    c.querySelectorAll("[data-par]").forEach(b=> b.onclick=()=>{
+      const pid=parseInt(b.dataset.par,10), nm=b.dataset.nm;
+      navTo(nm, ()=>{
+        curItem = {kind:"home", queryType:5, parashaId:pid, masechetId:-1, dafNo:-1, text:nm, fromRow:0};
+        sendCurItem();
+      });
+    });
+  } else if(specialCtx.kind==="nach" || specialCtx.kind==="moadim"){
+    // שניהם נפתחים באותו דפוס של נושא: מזהה הענף כאב, ומזהה הפריט כנושא.
+    const isNach = specialCtx.kind==="nach";
+    let rows = (browseData[specialCtx.kind]||[]);
+    rows = isNach ? rows.filter(x=> x.NaviNameHebrew)
+                  : rows.filter(x=> x.MoedNameHebrew && x.ParentId===0);
+    const nameOf = x => isNach ? x.NaviNameHebrew : x.MoedNameHebrew;
+    const idOf   = x => isNach ? x.NaviId : x.MoedId;
+    if(kw) rows = rows.filter(x=> nameOf(x).includes(kw));
+    if(!isNach) rows.sort((a,b)=> (a.MoedOrder||0)-(b.MoedOrder||0));
+    const item = x => `<button class="gitem" data-sub="${idOf(x)}" data-nm="${esc(nameOf(x))}">${ICONS.tag}
+        <span>${esc(nameOf(x))}${x.__all?`<small>הכל</small>`:""}</span></button>`;
+    let groups;
+    if(isNach){
+      // NaviKtuvim: 1=נביאים, 2=כתובים (אומת מול הנתונים - 21 ספרים מול 13)
+      groups = groupBy(rows, x=> x.NaviKtuvim, [1,2],
+                       k=> k===1 ? "נביאים" : "כתובים", "ספרים נוספים");
+    } else {
+      // מועד שיש מתחתיו מועדים (ParentId) הוא כותרת, ומתחתיה הבנים שלו. עד עכשיו
+      // סיננו ParentId===0 בלבד, ולכן 20 המועדים הפנימיים (סוכות, יום כיפור...)
+      // לא הופיעו כאן כלל.
+      const all = (browseData.moadim||[]).filter(x=> x.MoedNameHebrew);
+      const byOrder = (a,b)=> (a.MoedOrder||0)-(b.MoedOrder||0);
+      const kidsOf = pid => all.filter(x=> x.ParentId===pid).sort(byOrder);
+      // הרשימה נבנית מהמועדים הראשיים המלאים ולא מ-rows, כי בחיפוש חופשי צריך למצוא
+      // גם מועד פנימי ("יום כיפור") שהאב שלו ("ימים נוראים") אינו מתאים למילת החיפוש.
+      groups = []; let loose = [];
+      for(const t of all.filter(x=> x.ParentId===0).sort(byOrder)){
+        const kids = kidsOf(t.MoedId);
+        const hit  = !kw || nameOf(t).includes(kw);
+        if(kids.length){
+          const show = kids.filter(x=> hit || nameOf(x).includes(kw));
+          if(!show.length) continue;
+          if(loose.length){ groups.push({title:null, rows:loose}); loose = []; }
+          // האב עצמו הוא נושא לכל דבר ("כל ימי הפסח"), ולכן הוא נשאר פריט ראשון בקבוצה
+          groups.push({title:nameOf(t), rows:[Object.assign({}, t, {__all:true})].concat(show)});
+        } else if(hit) loose.push(t);
+      }
+      if(loose.length) groups.push({title:null, rows:loose});
+    }
+    c.innerHTML = head + groupedList(groups, item);
+    bindSubjectItems(c, specialCtx.subjectId);
+  } else {
+    // שלושת הש"סים חולקים טבלת מסכתות אחת, אבל הם לא אותה רשימה ולא אותם שיעורים:
+    //   בבלי     - מסכתות שיש להן DafNo               (37)
+    //   ירושלמי  - מסכתות שיש להן DafNoYerushalmiVilna (39)
+    //   משנה     - כל מה שאינו HideInMishna            (63)
+    // הפתיחה היא לפי מזהה הש"ס כאב ומזהה המסכת כנושא. פתיחה לפי CatId - כפי שהיה
+    // כאן קודם - מחזירה את אותם שיעורים לשלושתם, כי ה-CatId שייך למסכת ולא לש"ס.
+    // שמות הסדרים אינם מגיעים מה-API (טבלת המסכתות מחזיקה SederId בלבד). הם קבועים,
+    // ואומתו מול הנתונים: 1=ברכות/פאה, 2=שבת/עירובין, 3=יבמות/כתובות, 4=בבא קמא,
+    // 5=זבחים/מנחות, 6=כלים/אהלות.
+    const SEDER = {1:"סדר זרעים",2:"סדר מועד",3:"סדר נשים",4:"סדר נזיקין",5:"סדר קדשים",6:"סדר טהרות"};
+    const shas = specialCtx.shas;
+    const num = v => (v === null || v === undefined || v === 0) ? 0 : v;
+    let rows = (browseData.masechtot||[]).filter(x=> x.MasechetNameHebrew && !x.HideFromWebSite);
+    if(shas === "bavli")           rows = rows.filter(x=> num(x.DafNo) > 0);
+    else if(shas === "yerushalmi") rows = rows.filter(x=> num(x.DafNoYerushalmiVilna) > 0);
+    else                           rows = rows.filter(x=> !x.HideInMishna);
+    if(kw) rows = rows.filter(x=> x.MasechetNameHebrew.includes(kw));
+
+    const order = x => shas === "yerushalmi" ? num(x.MasechetOrderYerushalmi) : num(x.MasechetOrderBavli);
+    rows.sort((a,b)=> (a.SederId - b.SederId) || (order(a) - order(b)));
+
+    const note = x => {
+      if(shas === "bavli")      return num(x.DafNo) ? num(x.DafNo) + " דפים" : "";
+      if(shas === "yerushalmi") return num(x.DafNoYerushalmiVilna) ? num(x.DafNoYerushalmiVilna) + " דפים" : "";
+      return num(x.PerekNo) ? num(x.PerekNo) + " פרקים" : "";
+    };
+    const groups = groupBy(rows, x=> x.SederId, [1,2,3,4,5,6],
+                           id=> SEDER[id], "מסכתות נוספות");
+    c.innerHTML = head + groupedList(groups, x=>{
+      const extra = note(x);
+      return `<button class="gitem" data-sub="${x.MasechetId}" data-nm="${esc(x.MasechetNameHebrew)}">${ICONS.book}
+        <span>${esc(x.MasechetNameHebrew)}${extra?`<small>${esc(extra)}</small>`:""}</span></button>`;
+    });
+    bindSubjectItems(c, specialCtx.subjectId);
+  }
+}
+
+/* פריט בתוך ענף מיוחד (ספר נ"ך, מועד, מסכת) נפתח כנושא: מזהה הענף כאב, ומזהה הפריט כנושא */
+function bindSubjectItems(box, rootId){
+  box.querySelectorAll("[data-sub]").forEach(b=> b.onclick=()=>{
+    const sid=parseInt(b.dataset.sub,10), nm=b.dataset.nm;
+    navTo(nm, ()=>{
+      curItem = {kind:"subject", mainId:rootId, subjectId:sid, text:nm, fromRow:0};
+      sendCurItem();
+    });
+  });
+}
+
+/* שולח את הפתיחה הנוכחית לשרת, לפי סוגה */
+function sendCurItem(){
+  if(!curItem) return;
+  busyNow("טוען שיעורים...");
+  const extra = {order:sortState.shiurim.o, lang:sortState.shiurim.l, fromRow:curItem.fromRow||0};
+  if(curItem.kind==="daily")
+    send(Object.assign({type:"openDaily", dailyId:dailyState.id, parentId:dailyState.parentId,
+                        date:dailyState.date, text:curItem.text}, extra));
+  else if(curItem.kind==="subject")
+    send(Object.assign({type:"openSubject", mainId:curItem.mainId, subjectId:curItem.subjectId,
+                        text:curItem.text}, extra));
+  else if(curItem.kind==="home")
+    send(Object.assign({type:"openHomeQuery", queryType:curItem.queryType, parashaId:curItem.parashaId,
+                        masechetId:curItem.masechetId, dafNo:curItem.dafNo, text:curItem.text}, extra));
+  else
+    send(Object.assign({type:"openSearchItem"}, curItem, extra));
+}
+
+/* סדרה וערוץ נפתחים באותו מסלול: QueryType=9 עם ה-CatId כמחרוזת הזיהוי */
+function bindCat(box){
+  box.querySelectorAll("[data-cat]").forEach(b=> b.onclick=()=>{
+    const cat=b.dataset.cat, nm=b.dataset.nm||"";
+    navTo(nm, ()=>{
+      curItem = {itemType:9, id:-1, bigId:-1, strId:cat, text:nm, fromRow:0};
+      sendCurItem();
+    });
+  });
+}
+
+/* ---------- סינון הספרים ----------
+   האפשרויות מגיעות מהשרת יחד עם כמות התוצאות לכל אחת, והבחירה נשלחת בחזרה כ-FiltersArray.
+
+   קבוצת "עזרים" (ספר / עלון / מסמך / שיעור כתוב, ResultType=33) אינה מוצגת כאן, אף
+   שדף הספרים באתר כן מציג אותה: השרת מתעלם ממנה. נמדד מול השרת החי (25/08/2026):
+   הוא מחזיר את כל ארבע האפשרויות עם אותו ResultId=1, ו-Search/WebSite_GetBooks מחזיר
+   בדיוק את אותה רשימה עבור כל אחת מהן - גם עם המטען המדויק שהאתר עצמו שולח (כולל
+   ResultCount ו-ActiveFilter). סריקת ResultId 0-16 העלתה שרק 1 (=הכול) ו-2 (=36 פריטים
+   לא קשורים) עושים משהו, ואין ערך שמחזיר את 1,276 הספרים או 338 העלונים שהשרת סופר.
+   לכן בחירה ב"ספר" הביאה גם עלונים. אם קול הלשון יתקנו זאת, די להחזיר את השורה. */
+const BOOK_FILTERS = [
+  {type:0,  name:"נושא"},
+  {type:2,  name:"רב"},
+  {type:3,  name:"שפה"},
+];
+let bookFilterOptions = [];   // כל האפשרויות שהתקבלו
+let bookFilterActive  = [];   // מה שנבחר: {ResultType, ResultId, ResultString}
+
+/* השרת מחזיר ResultString ריק לחלק מהשפות. שם השפה מושלם מהטבלה המקומית לפי המזהה,
+   וכך אין יותר שורות ריקות ברשימת הסינון. */
+function filterLabel(o){
+  if(o.ResultString && o.ResultString.trim()) return o.ResultString;
+  if(o.ResultType===3 && LANGS[o.ResultId]) return LANGS[o.ResultId];
+  return "(ללא שם)";
+}
+function sameFilter(a,b){
+  return a.ResultType===b.ResultType && a.ResultId===b.ResultId && a.ResultString===b.ResultString;
+}
+function booksRequest(fromRow){
+  return {type:"books", text:(curBooks&&curBooks.text)||"", fromRow:fromRow||0,
+          order:sortState.books.o, lang:sortState.books.l, filters:bookFilterActive};
+}
+function reloadBooks(){
+  curBooks = curBooks || {text:"", fromRow:0};
+  curBooks.fromRow = 0;
+  busyNow(bookFilterActive.length ? "מסנן ספרים... (השרת של קול הלשון איטי בסינון)" : "טוען ספרים...");
+  send(booksRequest(0));
+  send({type:"booksFilters", text:curBooks.text, order:sortState.books.o,
+        lang:sortState.books.l, filters:bookFilterActive});
+}
+
+function onBooksFilters(m){
+  bookFilterOptions = m.options || [];
+  // מחליפים את תוכן העוטף כולו. החלפה של שורת הכפתורים בלבד השאירה את שורת
+  // הצ'יפים הקודמת במקומה, והחדשה נוספה אחריה - ומכאן שתי שורות סינון.
+  const wrap = document.getElementById("bookFilterWrap");
+  if(wrap) wrap.innerHTML = booksFilterInner();
+  bindBookFilters();
+}
+
+function booksFilterBar(){ return `<div id="bookFilterWrap">` + booksFilterInner() + `</div>`; }
+
+function booksFilterInner(){
+  let h = `<div class="filterbar">`;
+  for(const g of BOOK_FILTERS){
+    const opts = bookFilterOptions.filter(o=> o.ResultType===g.type);
+    if(!opts.length) continue;
+    const picked = bookFilterActive.filter(o=> o.ResultType===g.type).length;
+    h += `<div class="fgroup">
+      <button class="fbtn ${picked?"on":""}" data-fg="${g.type}">${esc(g.name)}${picked?` (${picked})`:""} ▾</button>
+      <div class="fpop" data-fpop="${g.type}" style="display:none">${opts.map((o,i)=>{
+        const on = bookFilterActive.some(a=> sameFilter(a,o));
+        return `<label><input type="checkbox" data-ft="${g.type}" data-fi="${i}"${on?" checked":""}>
+          <span>${esc(filterLabel(o))}</span><i>${(o.ResultCount||0).toLocaleString("he-IL")}</i></label>`;
+      }).join("")}</div></div>`;
+  }
+  return h + `</div>` + booksChips();
+}
+function booksChips(){
+  if(!bookFilterActive.length) return "";
+  return `<div class="fchips">` + bookFilterActive.map((o,i)=>
+    `<span class="fchip">${esc(filterLabel(o))}<button data-fx="${i}">×</button></span>`).join("")
+    + `<span class="fchip"><button data-fclear="1">נקה הכל</button></span></div>`;
+}
+
+function bindBookFilters(){
+  const c = $("#content");
+  c.querySelectorAll("[data-fg]").forEach(b=> b.onclick=(e)=>{
+    e.stopPropagation();
+    const pop = c.querySelector(`[data-fpop="${b.dataset.fg}"]`);
+    const open = pop.style.display !== "none";
+    c.querySelectorAll("[data-fpop]").forEach(p=> p.style.display="none");
+    pop.style.display = open ? "none" : "block";
+  });
+  c.querySelectorAll("[data-ft]").forEach(cb=> cb.onchange=()=>{
+    const type = parseInt(cb.dataset.ft,10);
+    const opt = bookFilterOptions.filter(o=> o.ResultType===type)[parseInt(cb.dataset.fi,10)];
+    if(!opt) return;
+    const lean = {ResultType:opt.ResultType, ResultId:opt.ResultId, ResultString:opt.ResultString};
+    if(cb.checked){ if(!bookFilterActive.some(a=> sameFilter(a,lean))) bookFilterActive.push(lean); }
+    else bookFilterActive = bookFilterActive.filter(a=> !sameFilter(a,lean));
+    reloadBooks();
+  });
+  c.querySelectorAll("[data-fx]").forEach(b=> b.onclick=()=>{
+    bookFilterActive.splice(parseInt(b.dataset.fx,10),1); reloadBooks();
+  });
+  const clr = c.querySelector("[data-fclear]");
+  if(clr) clr.onclick = ()=>{ bookFilterActive = []; reloadBooks(); };
+}
+document.addEventListener("click", ()=>{
+  document.querySelectorAll("[data-fpop]").forEach(p=> p.style.display="none");
+});
+
+/* ---------- ספרים ועלונים (PDF) ---------- */
+let curBooks = null;
+function renderBooks(msg){
+  const list = msg.books || [];
+  const c = $("#content");
+  if(!msg.fromRow){
+    c.innerHTML = sortBar("books", null) + booksFilterBar() + `<div id="bookList"></div>`;
+    bindSortBar(c, reloadBooks);
+    bindBookFilters();
+  }
+  const box = $("#bookList");
+  if(!box) return;
+  const om = document.getElementById("moreBooks"); if(om) om.remove();
+  for(const b of list) box.insertAdjacentHTML("beforeend", bookRow(b));
+  if(list.length >= 24){
+    const btn=document.createElement("button"); btn.className="loadmore"; btn.id="moreBooks";
+    btn.innerHTML = ICONS.download + "<span>טען עוד ספרים</span>";
+    btn.onclick=()=>{ curBooks.fromRow=(curBooks.fromRow||0)+24; send(booksRequest(curBooks.fromRow)); };
+    box.appendChild(btn);
+  }
+  bindShiur(box);
+  if(!msg.fromRow && list.length===0)
+    box.innerHTML = emptyState("לא נמצאו ספרים","נסו מילת חיפוש אחרת, או השאירו ריק כדי לראות את החדשים ביותר.");
+}
+/* ---------- תמונת העמוד הראשון של ספר/עלון ----------
+   לצד כל PDF יושבת אצל קול הלשון תיקיית עמודים בשמות זהים לשם הקובץ (ריפוד ל-8
+   ספרות, תיקייה = חמש הספרות הראשונות - בדיוק כמו ב-DirectPdfUrl):
+     PDF/Shiurim/42584/42584234.pdf -> PDF/Shiurim/42584/42584234_PAGES/42584234_1.jpg
+   קובץ סטטי, בלי API ולכן בלי אתגר Cloudflare. לא לכל פריט יש תמונה כזו (חסרה =
+   404), ולכן היא נטענת מראש והחלונית נפתחת רק אם הטעינה הצליחה. */
+function pdfPageImgUrl(fileId){
+  const n = String(fileId == null ? "" : fileId);
+  if(!/^\d+$/.test(n)) return "";
+  const name = n.padStart(8, "0");
+  return `https://www.kolhalashon.com/PDF/Shiurim/${name.slice(0,5)}/${name}_PAGES/${name}_1.jpg`;
+}
+function bookRow(b){
+  const title=esc(b.TitleHebrew||"ספר");
+  const topic=esc(b.CatDesc1||b.MainTopicHebrew||"");
+  const date=esc(hebDate(b));
+  const thumb=pdfPageImgUrl(b.FileId);
+  let meta=ravChip(b.UserNameHebrew||"", b.RavImageFileName, b.UserId);
+  if(date) meta+=`<span class="chip">${ICONS.cal}${date}</span>`;
+  if(topic) meta+=`<span class="chip">${topic}</span>`;
+  const d = JSON.stringify({fileId:b.FileId,title:b.TitleHebrew||"ספר",rav:b.UserNameHebrew||"",topic:b.CatDesc1||b.MainTopicHebrew||""}).replace(/"/g,"&quot;");
+  // הכותרת עטופה ב-span כדי שההצצה תמוקם ליד הטקסט עצמו ולא ליד השורה במלוא רוחבה
+  const t = thumb ? `<span class="btitle" data-thumb="${esc(thumb)}">${title}</span>` : title;
+  return `<div class="shiur"><div class="body"><div class="t">${t}</div><div class="meta">${meta}</div></div>
+    <div class="actions"><button class="dl audio" data-q="pdf" data-s="${d}">${ICONS.download}PDF</button></div></div>`;
+}
+
+/* שיעור בודד שנבחר מתוך "תוצאות נוספות" (SearchItemType=10) */
+function renderShiurDetails(msg){
+  const s = Array.isArray(msg.shiur) ? msg.shiur[0] : msg.shiur;
+  const c = $("#content");
+  if(!s){ toast("לא נמצאו פרטים לשיעור זה"); return; }
+  if(!s.FileId) s.FileId = msg.fileId;
+  if(!s.TitleHebrew) s.TitleHebrew = s.ShiurName || s.SubjectHebrew || s.TitleEnglish || "שיעור";
+  // אם השרת לא החזיר דגלי זמינות - מניחים שמע, שהוא ברירת המחדל של קול הלשון
+  if(s.HasAudio===undefined && s.HasVideo===undefined && s.HasHdVideo===undefined) s.HasAudio = true;
+  curRav = {id:null, name:s.UserNameHebrew||"", fromRow:0};
+  c.innerHTML = `<div class="crumb">${backBtn()}<div class="title">${esc(s.TitleHebrew||"שיעור")}</div></div>
+    <div id="shiurList">${shiurRow(s)}</div>`;
+  bindShiur($("#shiurList"));
+}
+
+function bindShiur(box){
+  box.querySelectorAll("[data-ravid]").forEach(b=>{
+    if(b.__r) return; b.__r=true;
+    const id=parseInt(b.dataset.ravid,10), nm=b.dataset.ravnm||"", im=b.dataset.ravimg||"";
+    b.onclick=()=> navTo(nm, ()=> openRav(id, nm, im));
+  });
+  box.querySelectorAll(".dl[data-s]").forEach(b=>{
+    if(b.__b) return; b.__b=true;
+    b.onclick=()=>{ const s=JSON.parse(b.dataset.s.replace(/&quot;/g,'"')); requestDownload(s.fileId,b.dataset.q,s.title,s.rav,s.topic); };
+  });
+  box.querySelectorAll(".pl[data-play]").forEach(b=>{
+    if(b.__p) return; b.__p=true;
+    b.onclick=()=>{ const s=JSON.parse(b.dataset.s.replace(/&quot;/g,'"')); playShiur(s.fileId, s.title, s.rav); };
+  });
+  box.querySelectorAll(".pl[data-vid]").forEach(b=>{
+    if(b.__v) return; b.__v=true;
+    b.onclick=()=>{ const s=JSON.parse(b.dataset.s.replace(/&quot;/g,'"'));
+      playVideo(s.fileId, s.title, s.rav, b.dataset.hd==="1"); };
+  });
+  drawPlayBtns();   // שורות שנוספו זה עתה מקבלות את מצב הנגן הנוכחי
+}
+
+/* ---------- יעדי הורדה (מחשב / התקנים נשלפים) ---------- */
+let targets = [], curTarget = "pc";
+/* ---------- נפח היעד ----------
+   השרת שולח freeBytes/totalBytes לכל יעד. בהתקן MTP אין אות כונן ולכן אין נפח,
+   והפס פשוט אינו מוצג. */
+function gb(b){
+  if(!(b>0)) return "";
+  const g = b/1073741824;
+  return (g>=10 ? Math.round(g) : g.toFixed(1)) + "GB";
+}
+function capBar(t){
+  if(!(t.totalBytes>0) || !(t.freeBytes>=0)) return "";
+  const usedPct = Math.min(100, Math.max(0, Math.round((t.totalBytes-t.freeBytes)/t.totalBytes*100)));
+  return `<span class="cap"><span class="capbar"><i class="${usedPct>=92?"full":""}" style="width:${usedPct}%"></i></span>
+    <span class="capnum">${gb(t.freeBytes)} פנוי מתוך ${gb(t.totalBytes)}</span></span>`;
+}
+function renderTargets(m){
+  targets = m.items || []; curTarget = m.current || "pc";
+  const box = $("#targetList");
+  box.innerHTML = targets.map(t=>{
+    const ext = t.kind !== "pc";
+    return `<button class="trow ${t.id===curTarget?"sel":""}" data-t="${esc(t.id)}">
+      <span class="ti">${t.kind==="mtp"?ICONS.phone:(ext?ICONS.usb:ICONS.pc)}</span>
+      <span class="tb"><span class="tn">${esc(t.name)}</span><span class="ts">${esc(t.path)}</span>${capBar(t)}</span>
+      ${t.id===curTarget?`<span class="tk">${ICONS.check}</span>`:""}</button>`;
+  }).join("") || `<div class="dempty">${m.deviceOnly
+      ? "לא מחובר התקן. חברו נגן, אונקי או כרטיס זיכרון כדי להוריד."
+      : "לא נמצאו התקנים"}</div>`;
+  box.querySelectorAll("[data-t]").forEach(b=> b.onclick=()=>{
+    send({type:"setTarget", id:b.dataset.t}); hideOverlay("#targetOverlay");
+  });
+  drawTargetPill();
+}
+function drawTargetPill(){
+  const t = targets.find(x=>x.id===curTarget);
+  const ext = t && t.kind!=="pc";
+  if(deviceOnly && !ext){
+    $("#targetIcon").innerHTML = ICONS.usb;
+    $("#targetTxt").textContent = "חברו התקן";
+    $("#targetPill").classList.remove("ext");
+    $("#targetPill").title = "במצב קיוסק ההורדה מתבצעת להתקן בלבד";
+    drawCap(null);
+    return;
+  }
+  $("#targetIcon").innerHTML = (t&&t.kind==="mtp")?ICONS.phone:(ext?ICONS.usb:ICONS.pc);
+  $("#targetTxt").textContent = t ? t.name : "המחשב";
+  $("#targetPill").classList.toggle("ext", !!ext);
+  $("#targetPill").title = t ? ("יעד ההורדות: "+t.path) : "יעד ההורדות";
+  drawCap(t);
+}
+function drawCap(t){
+  const box = $("#targetCap");
+  if(!box) return;
+  const ok = t && t.totalBytes>0 && t.freeBytes>=0;
+  box.classList.toggle("hide", !ok);
+  if(!ok) return;
+  const usedPct = Math.min(100, Math.max(0, Math.round((t.totalBytes-t.freeBytes)/t.totalBytes*100)));
+  const bar = box.querySelector("i");
+  bar.style.width = usedPct + "%";
+  bar.classList.toggle("full", usedPct>=92);
+  // בכותרת אין מקום לנוסח המלא; היחס נמסר ממילא בפס, ובחלון בחירת היעד מוצג הכול
+  box.querySelector(".capnum").textContent = gb(t.freeBytes) + " פנוי";
+}
+
+/* ---------- Downloads ---------- */
+function renderDl(item){ dls.set(item.id,item); drawList(); bumpBadge(); }
+/* גודל קובץ קריא. -1 מהשרת = הגודל עדיין לא ידוע (השרת לא שלח Content-Length). */
+function fmtSize(b){
+  if(!(b>0)) return "";
+  const one = v => v >= 100 ? String(Math.round(v)) : v.toFixed(1);   // ספרה עשרונית ב-3 ספרות היא רעש
+  if(b >= 1073741824) return one(b/1073741824)+"GB";
+  if(b >= 1048576)    return one(b/1048576)+"MB";
+  return Math.max(1, Math.round(b/1024))+"KB";
+}
+function fmtEta(sec){
+  if(!(sec>0) || sec===Infinity) return "";
+  if(sec < 60) return "פחות מדקה";
+  const mins = Math.round(sec/60);
+  if(mins <= 1) return "כדקה";
+  if(mins < 60) return "כ-" + mins + " דקות";
+  const h = Math.floor(mins/60), m = mins%60;
+  return "כ-" + (h===1 ? "שעה" : h + " שעות") + (m ? " ו-" + (m===1 ? "דקה" : m + " דקות") : "");
+}
+
+/* ---------- זמן משוער לסיום כל ההורדות ----------
+   נותר = מה שחסר בקבצים הפעילים + הקבצים הממתינים. לקובץ ממתין עדיין אין גודל
+   (הוא מתקבל רק כשההורדה מתחילה), ולכן הוא מוערך לפי הגודל הממוצע של הקבצים
+   שגודלם כבר ידוע. הקצב הוא סכום הקצבים של ההורדות הפעילות. */
+function drawSummary(arr){
+  const box = $("#dlSummary");
+  if(!arr.length){ box.style.display="none"; return; }
+  const active  = arr.filter(i=> i.status==="downloading");
+  const waiting = arr.filter(i=> i.status==="waiting");
+
+  // גודל של קובץ שטרם התחיל אינו ידוע - הוא מגיע רק כשההורדה מתחילה. במקומו נלקח
+  // הגודל הממוצע של הקבצים שגודלם כבר ידוע, והסכום מסומן כמשוער.
+  const known = arr.filter(i=> i.bytesTotal>0).map(i=> i.bytesTotal);
+  const avg = known.length ? known.reduce((a,b)=>a+b,0)/known.length : 0;
+  const sizeOf = i => i.bytesTotal>0 ? i.bytesTotal : (i.bytesDone>0 ? i.bytesDone : avg);
+  const totalAll = arr.reduce((a,i)=> a + sizeOf(i), 0);
+  const guessed  = arr.some(i=> !(i.bytesTotal>0) && !(i.bytesDone>0)) && avg>0;
+
+  let left = 0;
+  for(const i of active)  left += i.bytesTotal>0 ? Math.max(0, i.bytesTotal-(i.bytesDone||0)) : avg;
+  for(const i of waiting) left += avg;
+
+  const speed = active.reduce((a,i)=> a + (i.bytesPerSec||0), 0);
+  const eta = (speed > 0 && left > 0) ? fmtEta(left/speed) : "";
+  const n = arr.length;
+
+  // בידוד כיוון: בלעדיו הסימן ~ נזרק לצד השני של המספר בתוך טקסט עברי
+  const total = `<span>${n} ${n===1?"קובץ":"קבצים"} · <b>${ltrRun((guessed?"~":"")+fmtSize(totalAll))}</b> בסך הכול</span>`;
+  let right = "";
+  if(active.length || waiting.length)
+    right = eta ? `<span>${fmtSize(left)} נותרו · <b>${esc(eta)}</b></span>`
+                : `<span>${fmtSize(left)} נותרו</span>`;
+
+  box.style.display = "";
+  box.innerHTML = total + right;
+}
+
+function drawList(){
+  const l=$("#dlList");
+  if(dls.size===0){ l.innerHTML=`<div class="dempty">${ICONS.inbox}אין הורדות עדיין</div>`; $("#dlSummary").style.display="none"; return; }
+  const arr=[...dls.values()].sort((a,b)=>a.id-b.id);
+  drawSummary(arr);
+  l.innerHTML=arr.map(dcard).join("");
+  l.querySelectorAll("[data-del]").forEach(b=> b.onclick=()=> send({type:"removeDownload",id:parseInt(b.dataset.del,10)}));
+  l.querySelectorAll("[data-reveal]").forEach(b=> b.onclick=()=> send({type:"revealFile",id:parseInt(b.dataset.reveal,10)}));
+  l.querySelectorAll("[data-open]").forEach(b=> b.onclick=()=> send({type:"openFile",id:parseInt(b.dataset.open,10)}));
+  l.querySelectorAll("[data-retry]").forEach(b=> b.onclick=()=>{ const it=dls.get(parseInt(b.dataset.retry,10)); if(it) send({type:"retryDownload",fileId:it.fileId,quality:qShort(it.quality),title:it.title,rav:it.rav}); });
+}
+function dcard(it){
+  const pct=it.percent<0?100:it.percent;
+  const cls=it.status==="done"?"done":(it.status==="error"?"error":"");
+  const map={waiting:"ממתין",downloading:"מוריד"+(it.percent<0?"":" "+it.percent+"%"),
+    copying:"מעתיק להתקן...",converting:"ממיר ל-MP4...",done:"הושלם",error:"שגיאה",canceled:"בוטל"};
+  let st=map[it.status]||it.status, stcls="";
+  let ic=""; if(it.status==="done"){stcls="ok";ic=ICONS.check;} else if(it.status==="error"){stcls="err";}
+  // שורת הפעולות. הפח קיים תמיד: בהורדה שרצה הוא מבטל ומסיר, ובכל השאר מסיר
+  // מהרשימה בלבד - הקובץ שכבר ירד נשאר במקומו על הדיסק.
+  // פתיחת הקובץ והתיקייה מותנות ב-canOpen (התוכנה בודקת שהקובץ אכן על המחשב)
+  // ומוסתרות במצב קיוסק שבו ההורדה היא להתקנים בלבד.
+  let act = "";
+  if(it.status==="error") act += `<button data-retry="${it.id}">נסה שוב</button>`;
+  if(it.status==="done" && it.canOpen && !deviceOnly){
+    const isPdf = qShort(it.quality)==="pdf";
+    act += `<button class="ib" data-reveal="${it.id}" title="פתח את התיקייה">${ICONS.folder}</button>`
+         + `<button class="ib" data-open="${it.id}" title="${isPdf?"פתח את הקובץ":"נגן במחשב"}">${isPdf?ICONS.book:ICONS.play}</button>`;
+  }
+  if(it.status!=="copying" && it.status!=="converting")
+    act += `<button class="ib danger" data-del="${it.id}" title="${
+      (it.status==="downloading"||it.status==="waiting") ? "בטל והסר" : "הסר מהרשימה"}">${ICONS.trash}</button>`;
+  if(act) act = `<span class="dacts">${act}</span>`;
+  // אחוז שלילי = לא ידוע. פס מלא היה נקרא כמו הורדה שהסתיימה, ולכן מוצג פס נע במקומו.
+  const indet = it.percent<0 && it.status!=="done" && it.status!=="waiting";
+  const w=(it.status==="waiting")?0:pct;
+  // גודל: בזמן הורדה מוצג "כמה מתוך כמה", ואחריה רק הגודל הסופי.
+  // כל מספר נעטף ב-bdi. בלי הבידוד הזה אלגוריתם ה-bidi מצרף את "249MB · 1.7MB"
+  // לקטע אחד משמאל לימין (הנקודה שביניהם נבלעת בין שני מספרים לטיניים), ואז
+  // בשורה הימנית-שמאלית הגודל הכולל והמהירות נקראים הפוך - וגם ה-"/ש'" נתלש.
+  const bdi = s => s ? `<bdi>${s}</bdi>` : "";
+  let size = "";
+  if(it.bytesTotal>0)
+    size = (it.status==="downloading" && it.bytesDone>0)
+      ? bdi(fmtSize(it.bytesDone)) + " מתוך " + bdi(fmtSize(it.bytesTotal))
+      : bdi(fmtSize(it.bytesTotal));
+  else if(it.bytesDone>0) size = bdi(fmtSize(it.bytesDone));
+  const speed = (it.status==="downloading" && it.bytesPerSec>0)
+    ? "מהירות הורדה: " + bdi(fmtSize(it.bytesPerSec)) + " לשנייה" : "";
+  return `<div class="dcard ${cls}"><div class="dt" title="${esc(it.title)}">${esc(it.title)}</div>
+    <div class="dsub">${esc(it.rav||"")} · ${qName(it.quality)}${size?" · "+size:""}${speed?"<br>"+speed:""}</div>
+    <div class="track"><i class="${indet?"indet":""}" style="${indet?"":`width:${w}%`}"></i></div>
+    <div class="dfoot"><span class="st ${stcls}">${ic}${st}${it.status==="error"&&it.error?": "+esc(it.error):""}</span>${act}</div></div>`;
+}
+function qName(q){ q=(q||"").toLowerCase();
+  return q.indexOf("pdf")>=0?"PDF":q.indexOf("hd")>=0?"HD":q.indexOf("video")>=0?"וידאו":"שמע"; }
+function qShort(q){ q=(q||"").toLowerCase();
+  return q.indexOf("pdf")>=0?"pdf":q.indexOf("hd")>=0?"hd":q.indexOf("video")>=0?"video":"audio"; }
+function bumpBadge(){
+  const n=[...dls.values()].filter(i=>i.status==="downloading"||i.status==="waiting"||i.status==="copying"||i.status==="converting").length;
+  const b=$("#dlBadge"); if(n>0){b.style.display="";b.textContent=n;} else b.style.display="none";
+}
+
+/* ---------- מצב התחברות + ספירה לאחור של משך החיבור ---------- */
+let sessionLeft = -1;          // שניות שנותרו (-1 = ללא הגבלה)
+let sessionTick = null;
+let loginUser = "";
+function setLoginState(s){
+  loggedIn=!!s.loggedIn;
+  $("#loginPill").classList.toggle("on",loggedIn);
+  sessionLeft = (typeof s.secondsLeft==="number") ? s.secondsLeft : -1;
+  if(loggedIn && !s.username && $("#liUser").value) s.username = $("#liUser").value;
+  loginUser = s.username || "";
+  drawLoginPill();
+  clearInterval(sessionTick); sessionTick=null;
+  if(loggedIn && sessionLeft>=0)
+    sessionTick = setInterval(()=>{ if(sessionLeft>0){ sessionLeft--; drawLoginPill(); } },1000);
+  if(!loggedIn) $("#liPass").value="";
+}
+let deviceOnly = false;
+/* מצב קיוסק "להתקנים בלבד": אין האזנה ואין פתיחת קבצים במחשב, ולכן כל סמלי
+   ההפעלה נעלמים - גם בשורות השיעורים וגם בכרטיסי ההורדה - והנגן נסגר אם היה פתוח. */
+function setDeviceOnly(on){
+  deviceOnly = !!on;
+  const fb = document.getElementById("tgFolder");
+  if(fb) fb.style.display = deviceOnly ? "none" : "";
+  if(deviceOnly){
+    if(typeof closePlayer === "function") closePlayer();
+    if(typeof stopVideo === "function") stopVideo(false);
+  }
+  if(typeof drawList === "function") drawList();
+}
+let loginEnabled = false;
+function setLoginVisible(on){
+  loginEnabled = on;
+  for(const id of ["#loginPill","#btnLogout"]){
+    const el = $(id);
+    if(el) el.style.display = on ? "" : "none";
+  }
+  if(!on) hideOverlay("#loginOverlay");
+}
+function drawLoginPill(){
+  $("#btnLogout").style.display = (loggedIn && $("#loginPill").style.display !== "none") ? "" : "none";
+  if(!loggedIn){ $("#loginTxt").textContent="לא מחובר"; $("#loginPill").title="לחצו כדי להתחבר"; return; }
+  let t = "מחובר" + (loginUser ? " · "+loginUser : "");
+  if(sessionLeft>=0) t += " · "+fmtLeft(sessionLeft);
+  $("#loginTxt").textContent = t;
+  $("#loginPill").title = "לחצו כדי להתנתק";
+}
+function fmtLeft(sec){
+  if(sec<=0) return "פג";
+  const m=Math.floor(sec/60);
+  return m>=60 ? Math.floor(m/60)+":"+String(m%60).padStart(2,"0")+" שע'" : (m>0? m+" דק'" : sec+" שנ'");
+}
+
+let toastT=null;
+function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2600); }
+function busy(on,m){ $("#busy").classList.toggle("show",on); if(m)$("#busyMsg").textContent=m; }
+
+/* חיווי טעינה מיידי - מוצג ברגע הלחיצה ולא אחרי הלוך-ושוב לשרת.
+   מוסתר כשהתוצאות מגיעות (ראו doneBusy), ובנוסף יש שומר סף למקרה שתשובה לא תגיע כלל. */
+let busyGuard = null;
+function busyNow(msg){
+  busy(true, msg || "טוען...");
+  clearTimeout(busyGuard);
+  busyGuard = setTimeout(()=>{ busy(false); }, 60000);
+}
+function doneBusy(){ clearTimeout(busyGuard); busyGuard = null; busy(false); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+host && host.addEventListener("message", e=>{
+  const m=e.data; if(!m||!m.type) return;
+  switch(m.type){
+    case "settings":
+      if(m.title){ $("#title").textContent=m.title; document.title=m.title; }
+      if(m.defaultQuality) defaultQuality=m.defaultQuality;
+      if(m.audioBase) audioBase=m.audioBase;
+      allowVideo = m.allowVideo!==false; allowHd = m.allowHd!==false;
+      // אף סוג הורדה אינו דורש חשבון, ולכן ההתחברות מוסתרת כברירת מחדל. הסימון showLogin
+      // בקובץ ההגדרות מחזיר אותה, וכל הקוד שלה נשאר במקומו לשימוש עתידי.
+      setLoginVisible(m.showLogin===true);
+      setDeviceOnly(m.kioskDeviceOnly===true);
+      setExitMode(m.requireExitPassword); break;
+    case "dailyInfo": onDailyInfo(m); break;
+    case "hebPicked":
+      if(dailyState){ dailyState.date = m.date; curItem.fromRow = 0; sendCurItem(); }
+      break;
+    case "browseList": doneBusy(); onBrowseList(m); break;
+    case "booksList": doneBusy(); renderBooks(m); break;
+    case "booksFilters": onBooksFilters(m); break;
+    case "videoUrl": onVideoUrl(m); break;
+    case "targets": renderTargets(m); break;
+    case "loginState": setLoginState(m); break;
+    case "searchResults": doneBusy(); renderSearch(m); break;
+    case "ravShiurim": doneBusy(); renderRavShiurim(m); break;
+    case "shiurDetails": doneBusy(); renderShiurDetails(m); break;
+    case "searchShiurim": doneBusy(); renderSearchShiurim(m); break;
+    case "downloadUpdate": renderDl(m); break;
+    case "downloadsSnapshot": dls.clear(); (m.items||[]).forEach(i=>dls.set(i.id,i)); drawList(); bumpBadge(); break;
+    case "needLogin": openLogin(); break;
+    case "loginOk": hideOverlay("#loginOverlay"); $("#liPass").value="";
+      if(pendingDownload){ send(pendingDownload); pendingDownload=null; toast("מתחיל הורדה"); toggleDrawer(true); } break;
+    case "loginFailed": $("#liPass").value=""; $("#liPass").focus(); break;
+    case "exitDenied": toast("סיסמה שגויה"); break;
+    case "busy": m.on ? busyNow(m.message) : doneBusy(); break;
+    case "toast": toast(m.message); break;
+  }
+});
+/* ממקם חלונית צפה ליד אלמנט (ולא ליד הסמן, כדי שלא תרעד), ודוחף אותה
+   פנימה כשאין מקום בצד. משמש גם להצצה לתמונה וגם לחלונית הטלפון. */
+function placeNear(box, anchor){
+  const r = anchor.getBoundingClientRect ? anchor.getBoundingClientRect() : anchor;
+  const w = box.offsetWidth, h = box.offsetHeight, gap = 10, pad = 8;
+  let left = r.left - w - gap;                 // ברירת מחדל: משמאל לאלמנט (ממשק ימין-לשמאל)
+  if(left < pad) left = r.right + gap;         // אין מקום? לצד השני
+  left = Math.min(Math.max(left, pad), innerWidth - w - pad);
+  let top = r.top + r.height/2 - h/2;
+  top = Math.min(Math.max(top, pad), innerHeight - h - pad);
+  box.style.left = left + "px";
+  box.style.top  = top + "px";
+}
+
+/* ---------- האזנה לשיעור בטלפון ----------
+   הקוד שמקישים בטלפון הוא פשוט מזהה השיעור (FileId) - כך זה בקוד של האתר:
+   data = {dialNumber: shiur.FileId}. רשימת קווי החיוג הועתקה מהאתר (המערך ji
+   ב-chunk-KCASKPBD.js); שמות המדינות מתורגמים אצלם בקובץ i18n שאינו נגיש לנו,
+   ולכן הם כתובים כאן. החלונית נפתחת במעבר עכבר, כמו באתר (mouseenter). */
+const PHONE_LINES = [
+  {name:"ישראל",              num:"03-6171111"},
+  {name:"אנגליה",             num:"+44 330 551 7777"},
+  {name:"ארה\"ב",             num:"+1 605 3136660"},
+  {name:"שווייץ",             num:"(+41) 44-5087456"},
+  {name:"שווייץ - קו נוסף",   num:"(+41) 44-5529930"},
+  {name:"אוסטרליה",           num:"(+61) 39-0216884"},
+  {name:"מקסיקו",             num:"(+52) 55-52805280"},
+  {name:"צרפת",               num:"(+33) 98-0091256"},
+  {name:"בלגיה",              num:"(+32) 48-0201222"},
+  {name:"קנדה",               num:"(+1) 514-4469513"},
+  {name:"הולנד",              num:"(+31) 20-8932952"},
+  {name:"ארגנטינה",           num:"(+54) 11-52198855"},
+  {name:"ארגנטינה - ישיר",    num:"(+54) 11-52742453"},
+  {name:"דרום אפריקה",        num:"(+27) 11-5680938"},
+  {name:"אוסטריה",            num:"(+43) 14-170392"},
+];
+/* מספר בינלאומי כמו "(+41) 44-5087456" מתפרק בתוך טקסט עברי: הדפדפן מזהה את
+   הסוגריים ואת ה-+ כתווים נייטרליים ומעיף אותם לצד השני. בידוד כיוון (LRI/PDI)
+   שומר על המספר כרצף אחד משמאל לימין, עם הקידומת במקומה. */
+const ltrRun = t => "⁦" + t + "⁩";
+let phoneLine = 0;              // הקו שנבחר - נשמר בין פתיחות
+const phonePop = $("#phonePop");
+let phoneFor = null;            // התג שעליו החלונית פתוחה כרגע
+
+function showPhonePop(el){
+  if(phoneFor === el) return;
+  phoneFor = el;
+  const code = el.dataset.fid;
+  phonePop.innerHTML =
+    `<h4>האזנה לשיעור בטלפון</h4>
+     <div class="lbl">חייגו</div>
+     <select id="phLine">${PHONE_LINES.map((l,i)=>
+       `<option value="${i}"${i===phoneLine?" selected":""}>${esc(l.name)} · ${ltrRun(esc(l.num))}</option>`).join("")}</select>
+     <div class="lbl">ואחר כך הקישו משמאל לימין</div>
+     <div class="keys"><span>*</span><span>#</span><span class="num">${esc(code)}</span><span>#</span></div>
+     <div class="dir">⟶</div>`;
+  phonePop.classList.add("show");
+  $("#phLine").onchange = e => { phoneLine = parseInt(e.target.value,10); };
+  placeNear(phonePop, el);
+}
+function hidePhonePop(){ phoneFor = null; phonePop.classList.remove("show"); }
+
+/* סוגרים כשהעכבר יצא גם מהתג וגם מהחלונית - בדיוק ההתנהגות באתר. בדיקה על
+   mousemove ולא על mouseleave, כי בין התג לחלונית יש רווח. */
+document.addEventListener("mousemove", e=>{
+  if(!phoneFor) return;
+  if(phonePop.contains(e.target) || phoneFor.contains(e.target)) return;
+  hidePhonePop();
+});
+document.addEventListener("mouseover", e=>{
+  const el = e.target.closest && e.target.closest(".phcode");
+  if(el) showPhonePop(el);
+});
+// מסך מגע: אין mouseover, ולכן גם לחיצה פותחת
+document.addEventListener("click", e=>{
+  const el = e.target.closest && e.target.closest(".phcode");
+  if(el) showPhonePop(el); else if(phoneFor && !phonePop.contains(e.target)) hidePhonePop();
+});
+document.addEventListener("scroll", hidePhonePop, true);
+addEventListener("resize", hidePhonePop);
+
+/* ---------- נגן האזנה (הזרמה, בלי הורדה) ----------
+   השמע מגיע מאותה כתובת ישירה שממנה מתבצעת ההורדה - files/GetMp3FileToPlay/<FileId>.
+   התשובה נושאת Accept-Ranges, ולכן הדפדפן מזרים ממנה לפי הצורך במקום למשוך את
+   הקובץ כולו, וההאזנה מתחילה מיד. הכתובת מגיעה מהתוכנה בהודעת settings ואינה
+   כתובה כאן, כדי שתלך אחרי כתובת ה-API שבהגדרות.
+   כותרת content-disposition: attachment שבתשובה אינה מפריעה: היא נוגעת רק להורדות
+   ולניווט, ואלמנט audio מתעלם ממנה. */
+let audioBase = "";
+const plr = $("#player"), au = $("#plAudio"), seek = $("#plSeek");
+let playing = null;          // {fileId, title, rav}
+let seekGrab = false;        // בזמן גרירת הידית לא דורסים את מיקומה בעדכוני timeupdate
+
+function mmss(t){
+  if(!(t>0) || t===Infinity) return "0:00";
+  const s = Math.floor(t%60), m = Math.floor(t/60)%60, h = Math.floor(t/3600);
+  const mm = h ? String(m).padStart(2,"0") : String(m);
+  return (h ? h+":" : "") + mm + ":" + String(s).padStart(2,"0");
+}
+function drawPlayBtns(){
+  const on = playing && !au.paused;
+  $("#plToggle").innerHTML = on ? ICONS.pause : ICONS.play;
+  document.querySelectorAll(".pl[data-play]").forEach(b=>{
+    const cur = playing && String(playing.fileId) === b.dataset.play;
+    b.classList.toggle("on", !!(cur && !au.paused));
+    b.innerHTML = (cur && !au.paused) ? ICONS.pause : ICONS.play;
+    b.title = cur ? (au.paused ? "המשך האזנה" : "השהה") : "האזנה לשיעור";
+  });
+}
+function playShiur(fileId, title, rav){
+  if(deviceOnly) return;
+  if(!audioBase){ toast("הנגן עדיין לא מוכן"); return; }
+  if(playing && playing.fileId === fileId){     // אותו שיעור: לחיצה נוספת מפעילה/משהה
+    if(au.paused) au.play().catch(()=>{}); else au.pause();
+    drawPlayBtns();
+    return;
+  }
+  playing = {fileId, title, rav};
+  $("#plTitle").textContent = title || "שיעור";
+  $("#plSub").textContent = rav || "";
+  $("#plCur").textContent = "0:00"; $("#plDur").textContent = "0:00";
+  seek.value = 0;
+  plr.classList.add("on");
+  au.src = audioBase + fileId;
+  au.play().catch(()=>{});
+  drawPlayBtns();
+}
+function closePlayer(){
+  au.pause();
+  au.removeAttribute("src"); au.load();   // עוצר גם את המשיכה מהרשת, לא רק את הצליל
+  playing = null;
+  plr.classList.remove("on");
+  drawPlayBtns();
+}
+$("#plToggle").onclick = ()=>{ if(!playing) return; if(au.paused) au.play().catch(()=>{}); else au.pause(); };
+$("#plBack").onclick = ()=>{ au.currentTime = Math.max(0, au.currentTime-15); };
+$("#plFwd").onclick  = ()=>{ if(au.duration) au.currentTime = Math.min(au.duration, au.currentTime+15); };
+$("#plClose").onclick = closePlayer;
+au.addEventListener("play",  drawPlayBtns);
+au.addEventListener("pause", drawPlayBtns);
+au.addEventListener("loadedmetadata", ()=>{ $("#plDur").textContent = mmss(au.duration); });
+au.addEventListener("timeupdate", ()=>{
+  $("#plCur").textContent = mmss(au.currentTime);
+  if(!seekGrab && au.duration) seek.value = Math.round(au.currentTime/au.duration*1000);
+});
+au.addEventListener("ended", ()=>{ seek.value = 0; drawPlayBtns(); });
+au.addEventListener("error", ()=>{
+  if(!playing) return;                    // מקור שנוקה בסגירת הנגן - לא שגיאה
+  toast("לא ניתן להשמיע את השיעור. אפשר להוריד אותו במקום.");
+  closePlayer();
+});
+seek.addEventListener("input", ()=>{ seekGrab = true;
+  if(au.duration) $("#plCur").textContent = mmss(seek.value/1000*au.duration); });
+seek.addEventListener("change", ()=>{ seekGrab = false;
+  if(au.duration) au.currentTime = seek.value/1000*au.duration; });
+
+/* ---------- נגן וידאו (הזרמת HLS) ----------
+   הווידאו של קול הלשון קיים רק כזרם HLS משרת Wowza (playlist.m3u8 -> chunklist ->
+   מקטעי .ts), ו-Chromium אינו מנגן HLS מקורית. hls.js מושך את המניפסט והמקטעים,
+   ממיר אותם ל-fMP4 ומזין ל-MediaSource - ולכן הוא מוטמע בדף (ראו BuildKioskHtml).
+   שרת ה-streaming מגיש Access-Control-Allow-Origin: * ואינו מציב אתגר Cloudflare,
+   ולכן המשיכה מתבצעת מהדף עצמו. מה שהדף לא יכול לברר הוא מיקום הקובץ - זו קריאת
+   API - ולכן הכתובת מתקבלת מהתוכנה בהודעת videoUrl. */
+const vidEl = $("#vidEl");
+let hls = null, vidWant = null;      // vidWant = מזהה השיעור שהתשובה עבורו רלוונטית
+
+function playVideo(fileId, title, rav, hd){
+  if(deviceOnly) return;
+  vidWant = fileId;
+  try{ au.pause(); }catch(e){}          // לא מנגנים שמע ווידאו יחד
+  $("#vidTitle").textContent = [title||"שיעור", rav].filter(Boolean).join(" · ");
+  $("#vidMsg").textContent = "מברר את כתובת הווידאו...";
+  $("#vidMsg").classList.remove("hide");
+  showOverlay("#vidOverlay");
+  send({type:"videoStream", fileId, hd:!!hd});
+}
+function onVideoUrl(m){
+  if(m.fileId !== vidWant) return;              // תשובה לשיעור אחר שכבר נזנח
+  if(m.error || !m.url){ $("#vidMsg").textContent = m.error || "לא נמצא זרם וידאו לשיעור זה."; return; }
+  $("#vidMsg").textContent = "טוען את הווידאו...";
+  stopVideo(true);
+  if(window.Hls && Hls.isSupported()){
+    hls = new Hls({enableWorker:true});
+    hls.on(Hls.Events.MANIFEST_PARSED, ()=>{ $("#vidMsg").classList.add("hide"); vidEl.play().catch(()=>{}); });
+    hls.on(Hls.Events.ERROR, (_e,d)=>{
+      if(!d.fatal) return;                      // שגיאות רגעיות ב-hls.js מטופלות אצלו
+      $("#vidMsg").textContent = "שגיאה בהזרמת הווידאו. אפשר להוריד את השיעור במקום.";
+      $("#vidMsg").classList.remove("hide");
+    });
+    hls.loadSource(m.url);
+    hls.attachMedia(vidEl);
+  } else if(vidEl.canPlayType("application/vnd.apple.mpegurl")){
+    vidEl.src = m.url;                          // מסלול לדפדפנים עם HLS מובנה
+    vidEl.play().catch(()=>{});
+    $("#vidMsg").classList.add("hide");
+  } else {
+    $("#vidMsg").textContent = "נגן הווידאו אינו זמין בגרסה זו.";
+  }
+}
+/* keepOverlay: ניקוי לפני טעינת זרם חדש, בלי לסגור את החלון */
+function stopVideo(keepOverlay){
+  try{ vidEl.pause(); }catch(e){}
+  if(hls){ try{ hls.destroy(); }catch(e){} hls = null; }
+  vidEl.removeAttribute("src"); try{ vidEl.load(); }catch(e){}
+  if(!keepOverlay){ vidWant = null; hideOverlay("#vidOverlay"); }
+}
+$("#vidClose").onclick = ()=> stopVideo(false);
+// לחיצה על הרקע האפור סוגרת, כמו בשאר החלונות
+$("#vidOverlay").addEventListener("click", e=>{ if(e.target.id==="vidOverlay") stopVideo(false); });
+
+/* ---------- הצצה מוגדלת לתמונה ----------
+   מעבר עם העכבר על תמונת רב (בכרטיס, ברשימה או בתג שם הרב) מציג אותה בגודל מלא,
+   ומעבר על שם ספר או עלון מציג את תמונת העמוד הראשון שלו.
+   ההאזנה היא ברמת המסמך ב-mouseover/mouseout, כי הרשימות נבנות מחדש בכל רינדור
+   ו-mouseenter לא מבעבע ולכן לא מתאים להאזנה מואצלת. */
+const PEEK_SEL  = ".avatar img, .chip.rav img";
+const BPEEK_SEL = ".btitle[data-thumb]";
+const ANY_PEEK  = PEEK_SEL + ", " + BPEEK_SEL;
+const peek = $("#imgPeek"), peekImg = peek.querySelector("img");
+let peekFor = null;
+
+function showPeek(img){
+  if(peekFor === img) return;
+  peekFor = img;
+  peek.classList.remove("pdf");
+  peekImg.src = img.currentSrc || img.src;
+  peek.classList.add("show");
+  placeNear(peek, img);
+}
+/* תמונת עמוד של PDF: לא לכל ספר יש אחת, ולכן היא נטענת קודם לזיכרון והחלונית
+   נפתחת רק אם הטעינה הצליחה - אחרת הייתה נפתחת מסגרת ריקה. הדפדפן מחזיק את
+   התמונה במטמון, ולכן מעבר חוזר על אותו שם נפתח מיד. */
+function showBookPeek(el){
+  if(peekFor === el) return;
+  peekFor = el;
+  peek.classList.remove("show");
+  const url = el.dataset.thumb, pre = new Image();
+  pre.onload = ()=>{
+    if(peekFor !== el) return;
+    peek.classList.add("pdf");
+    peekImg.src = url;
+    peek.classList.add("show");
+    placeNear(peek, clippedRect(el));
+  };
+  pre.src = url;
+}
+/* שם ארוך נחתך ב-overflow של השורה, אבל התיבה שלו ממשיכה אל מחוץ למסך. מיקום לפיה
+   היה מעיף את ההצצה לקצה הנגדי, ולכן היא נחתכת לפי מה שבאמת נראה. */
+function clippedRect(el){
+  const r = el.getBoundingClientRect(), p = el.parentElement;
+  if(!p) return r;
+  const c = p.getBoundingClientRect();
+  const left = Math.max(r.left, c.left), right = Math.min(r.right, c.right);
+  return {left, right, top:r.top, height:r.height, width:Math.max(0, right-left)};
+}
+function hidePeek(){ peekFor = null; peek.classList.remove("show"); }
+
+function peekTarget(t){ return (t && t.closest) ? t.closest(ANY_PEEK) : null; }
+document.addEventListener("mouseover", e=>{
+  const el = peekTarget(e.target);
+  if(el) el.matches(BPEEK_SEL) ? showBookPeek(el) : showPeek(el);
+});
+document.addEventListener("mouseout", e=>{
+  const el = peekTarget(e.target);
+  // relatedTarget ריק כשהעכבר יוצא מהחלון לגמרי
+  if(el && peekTarget(e.relatedTarget) !== el) hidePeek();
+});
+// מסך מגע: אין mouseover, ולכן לחיצה על שם ספר פותחת את ההצצה, ולחיצה בכל מקום אחר סוגרת
+document.addEventListener("click", e=>{
+  const el = e.target.closest && e.target.closest(BPEEK_SEL);
+  if(el) showBookPeek(el); else hidePeek();
+});
+// גלילה או שינוי גודל מזיזים את התמונה מתחת לחלונית, ולכן פשוט סוגרים אותה
+document.addEventListener("scroll", hidePeek, true);
+addEventListener("resize", hidePeek);
+
+drawList();
+setMode(mode);          // מצייר גם את שביל הניווט של הכרטיסייה הפתוחה
+send({type:"ready"});
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>KolHalashonKiosk</AssemblyName>
+    <RootNamespace>KolHalashonKiosk</RootNamespace>
+    <Version>1.0.0</Version>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <ApplicationIcon>ICON.ico</ApplicationIcon>
+    <!-- אל תכלול קבצים אוטומטית - נרשום במפורש (כמו zeitech) -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="KhlApi.cs" />
+    <Compile Include="KhlBrowser.cs" />
+    <Compile Include="DownloadManager.cs" />
+    <Compile Include="MediaTargets.cs" />
+    <Compile Include="MtpDevices.cs" />
+    <Compile Include="Ffmpeg.cs" />
+    <EmbeddedResource Include="kiosk.html" />
+    <!-- hls.js (Apache-2.0) - Chromium אינו מנגן HLS מקורית, וזרמי הווידאו של קול
+         הלשון הם HLS בלבד. נזרק לתוך kiosk.html בזמן הטעינה. ראו hls-LICENSE.txt -->
+    <EmbeddedResource Include="hls.min.js" />
+    <EmbeddedResource Include="hls-LICENSE.txt" />
+    <EmbeddedResource Include="admin.html" />
+    <EmbeddedResource Include="default-config.json" />
+    <!-- ffmpeg (בניית LGPL) - ממיר את הווידאו מ-TS ל-MP4 אמיתי. ראו Ffmpeg.cs -->
+    <EmbeddedResource Include="ffmpeg.exe" Condition="Exists('ffmpeg.exe')" />
+    <EmbeddedResource Include="ffmpeg-LICENSE.txt" Condition="Exists('ffmpeg-LICENSE.txt')" />
+    <!-- bootstrapper קטן שמוריד את WebView2 Runtime אם חסר -->
+    <EmbeddedResource Include="MicrosoftEdgeWebview2Setup.exe" Condition="Exists('MicrosoftEdgeWebview2Setup.exe')" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
+    <PackageReference Include="TagLibSharp" Version="2.3.0" />
+  </ItemGroup>
+
+</Project>
